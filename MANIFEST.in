@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+recursive-include docs *
+recursive-include src/senaite/instruments *
+recursive-exclude src/senaite/instruments *.pyc
+recursive-exclude src/senaite/instruments/tests *
+recursive-exclude src/senaite/instruments/docs *

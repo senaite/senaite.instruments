@@ -1,0 +1,17 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="senaite.instruments">
+
+   <adapter
+    for="*"
+    name="xcalibur_importer"
+    factory=".xcalibur.instrument.xcaliburimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="xcalibur_exporter"
+    factory=".xcalibur.instrument.xcaliburexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+
+</configure>

@@ -1,0 +1,19 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="senaite.instruments">
+
+  <five:registerPackage package="." initialize=".initialize" />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="SENAITE INSTRUCTIONS"
+      directory="profiles/default"
+      description="Installs the senaite.instruments add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <include package=".instruments" />
+
+</configure>
