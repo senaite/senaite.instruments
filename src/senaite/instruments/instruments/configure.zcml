@@ -14,4 +14,16 @@
     factory=".xcalibur.instrument.xcaliburexport"
     provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
 
+   <adapter
+    for="*"
+    name="masshunter_importer"
+    factory=".agilent.masshunter.instrument.masshunterimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="masshunter_exporter"
+    factory=".agilent.masshunter.instrument.masshunterexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+
 </configure>
