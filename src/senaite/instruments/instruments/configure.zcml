@@ -2,6 +2,7 @@
     xmlns="http://namespaces.zope.org/zope"
     i18n_domain="senaite.instruments">
 
+<!-- Incomplete ...
    <adapter
     for="*"
     name="xcalibur_importer"
@@ -24,6 +25,19 @@
     for="*"
     name="masshunter_exporter"
     factory=".agilent.masshunter.instrument.masshunterexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+... incomplete -->
+
+   <adapter
+    for="*"
+    name="chemstation_importer"
+    factory=".agilent.chemstation.instrument.chemstationimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="chemstation_exporter"
+    factory=".agilent.chemstation.instrument.chemstationexport"
     provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
 
 </configure>

@@ -42,6 +42,7 @@ setup(
         "setuptools",
         "senaite.api",
         "senaite.core",
+        "xlrd",
     ],
     extras_require={
         "test": [
