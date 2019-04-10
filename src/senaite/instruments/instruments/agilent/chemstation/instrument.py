@@ -209,7 +209,7 @@ def __init__(self, parser, context,  override,
 
 class chemstationimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "ChemStationImporter"
+    title = "Agilent Masshunter ChemStation"
 
     def __init__(self, context):
         self.context = context
