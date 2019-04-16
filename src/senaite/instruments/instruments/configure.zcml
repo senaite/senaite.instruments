@@ -5,14 +5,14 @@
    <adapter
     for="*"
     name="chemstation_importer"
-    factory=".agilent.chemstation.instrument.chemstationimport"
+    factory=".agilent.chemstation.chemstation.chemstationimport"
     provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
 
 <!-- Incomplete ...
    <adapter
     for="*"
     name="chemstation_exporter"
-    factory=".agilent.chemstation.instrument.chemstationexport"
+    factory=".agilent.chemstation.chemstation.chemstationexport"
     provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
 ... incomplete -->
 

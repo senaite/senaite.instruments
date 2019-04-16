@@ -87,7 +87,7 @@ class InstrumentXLSResultsFileParser(InstrumentResultsFileParser):
 
         # adpat csv_data into a FileUpload for parse method
         self._infile = infile
-        stub = FileStub(file=csv_data, name=infile.filename)
+        stub = FileStub(file=csv_data, name=str(infile.filename))
         self._csvfile = FileUpload(stub)
 
         self._encoding = None

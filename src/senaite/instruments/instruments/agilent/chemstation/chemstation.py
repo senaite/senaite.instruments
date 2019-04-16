@@ -219,7 +219,8 @@ class chemstationimport(object):
         """ Import Form
         """
         infile = request.form['instrument_results_file']
-        fileformat = request.form['instrument_results_file_format']
+        fileformat = request.form.get(
+            'instrument_results_file_format', 'xls')
         artoapply = request.form['artoapply']
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
