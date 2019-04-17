@@ -4,13 +4,14 @@ from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
 from bika.lims.exportimport.instruments import IInstrumentImportInterface
+from bika.lims.exportimport.instruments.instrument import format_keyword
 from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.exportimport.instruments.resultsimport import InstrumentCSVResultsFileParser
 from bika.lims.utils import t
 from zope.interface import implements
 
 
-class PesticideParser(InstrumentCSVResultsFileParser):
+class QuantitativeParser(InstrumentCSVResultsFileParser):
     """ Parser
     """
 
@@ -18,13 +19,8 @@ class PesticideParser(InstrumentCSVResultsFileParser):
         InstrumentCSVResultsFileParser.__init__(self, infile, 'CSV')
         self._end_header = False
         self._delimiter = ','
-        self._spec = {
-            'Propargite': {
-                'col_num': 8, 'col_name': 'RT'},
-            'TriphenylphosphateTPPISISTD': {
-                'col_num': 11, 'col_name': 'RT'},
-        }
-        self._rawresults = {}
+        # self._rawresults = {}
+        self._kw = None
 
     def _parseline(self, line):
         if self._end_header:
@@ -43,6 +39,8 @@ class PesticideParser(InstrumentCSVResultsFileParser):
 
         splitted = [token.strip() for token in line.split(self._delimiter)]
         if splitted[0].startswith('Sample'):
+            self._kw = splitted[7].split(' ')[0]
+            self._kw = format_keyword(self._kw)
             self._end_header = True
 
         return 0
@@ -59,35 +57,51 @@ class PesticideParser(InstrumentCSVResultsFileParser):
             self._header = splitted
             return 0
 
-        # self._rawresults = {ar_id: [{}]}
-        # value_column = 'Q-value'
-        # result = splitted[6]
-        # result = self.get_result(value_column, result, 0)
-        # record['QValue'] = result
-
-        # # assign record to kw dict
-        # kw = splitted[1]
-        # kw = format_keyword(kw)
-        # ar_id = self._rawresults.keys()[0]
-        # self._rawresults[ar_id][0][kw] = record
-
         ar_id = splitted[2]
-        # analysed_datetime = splitted[6]
-        self._rawresults[ar_id] = []
-        for kw in self._spec:
-            col_name = self._spec[kw]['col_name']
-            col_num = self._spec[kw]['col_num']
-            record = {
-                'DefaultResult': col_name,
-                'Remarks': ''
-            }
-            result = splitted[col_num]
-            record[col_name] = self.get_result(col_name, result, 0)
+        # self._rawresults[ar_id] = []
+        col_name = 'Final Conc.'
+        col_num = 11
+        record = {
+            'DefaultResult': col_name,
+            'Remarks': '',
+            'DateTime': splitted[6]
+        }
+        result = splitted[col_num]
+        record[col_name] = self.get_result(col_name, result, 0)
 
-            # Interim values can get added to record here
+        # Interim values can get added to record here
+        value_column = 'CorrectionFactor'
+        result = splitted[7]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
 
-            # Append record
-            self._rawresults[ar_id].append({kw: record})
+        value_column = 'RetentionTime'
+        result = splitted[8]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'Area'
+        result = splitted[9]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'AnalyteQualifier'
+        result = splitted[14]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'StandardIdentifierRT'
+        result = splitted[15]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'StandardIdentifierArea'
+        result = splitted[16]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        # Append record
+        self._addRawResult(ar_id, {self._kw: record})
 
         return 0
 
@@ -107,14 +121,14 @@ class PesticideParser(InstrumentCSVResultsFileParser):
         return
 
 
-class PesticideImporter(AnalysisResultsImporter):
+class QuantitativeImporter(AnalysisResultsImporter):
     """ Importer
     """
 
 
-class pesticideimport(object):
+class quantitativeimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Agilent Masshunter Pesticide"
+    title = "Agilent Masshunter Quantitative"
 
     def __init__(self, context):
         self.context = context
@@ -124,7 +138,8 @@ class pesticideimport(object):
         """ Import Form
         """
         infile = request.form['instrument_results_file']
-        fileformat = request.form['instrument_results_file_format']
+        fileformat = request.form.get(
+            'instrument_results_file_format', 'csv')
         artoapply = request.form['artoapply']
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
@@ -137,7 +152,7 @@ class pesticideimport(object):
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
         if fileformat in ('csv'):
-            parser = PesticideParser(infile)
+            parser = QuantitativeParser(infile)
         else:
             errors.append(t(_("Unrecognized file format ${fileformat}",
                               mapping={"fileformat": fileformat})))
@@ -158,7 +173,7 @@ class pesticideimport(object):
             elif override == 'overrideempty':
                 over = [True, True]
 
-            importer = PesticideImporter(
+            importer = QuantitativeImporter(
                 parser=parser,
                 context=context,
                 allowed_ar_states=status,

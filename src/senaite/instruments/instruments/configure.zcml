@@ -18,8 +18,8 @@
 
    <adapter
     for="*"
-    name="masshunter_pesticide_importer"
-    factory=".agilent.masshunter.pesticide.pesticideimport"
+    name="masshunter_quantitative_importer"
+    factory=".agilent.masshunter.quantitative.quantitativeimport"
     provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
 
 <!-- Incomplete ...

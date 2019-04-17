@@ -93,6 +93,10 @@ class chemstationexport(object):
 class ChemStationParser(InstrumentXLSResultsFileParser):
     """ Parser
     """
+    def __init__(self, infile, encoding=None):
+        InstrumentXLSResultsFileParser.__init__(self, infile, encoding)
+        self._end_header = False
+        self._ar_id = None
 
     def _parseline(self, line):
         if self._end_header:
@@ -114,8 +118,7 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
             self._end_header = True
 
         if splitted[0].startswith('Sample Name:'):
-            ar_id = splitted[0].split(':')[1].strip()
-            self._rawresults = {ar_id: [{}]}
+            self._ar_id = splitted[0].split(':')[1].strip()
 
         return 0
 
@@ -160,8 +163,8 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         # assign record to kw dict
         kw = splitted[1]
         kw = format_keyword(kw)
-        ar_id = self._rawresults.keys()[0]
-        self._rawresults[ar_id][0][kw] = record
+        # self._rawresults[ar_id][0][kw] = record
+        self._addRawResult(self._ar_id, {kw: record})
 
         return 0
 
@@ -233,7 +236,7 @@ class chemstationimport(object):
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
         if fileformat in ('xls', 'xlsx'):
-            parser = ChemStationParser(infile, mimetype=fileformat)
+            parser = ChemStationParser(infile, encoding=fileformat)
         else:
             errors.append(t(_("Unrecognized file format ${fileformat}",
                               mapping={"fileformat": fileformat})))
