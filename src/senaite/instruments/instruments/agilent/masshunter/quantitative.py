@@ -59,44 +59,43 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
 
         ar_id = splitted[2]
         # self._rawresults[ar_id] = []
-        col_name = 'Final Conc.'
-        col_num = 11
+        value_column = 'FinalConc'
         record = {
-            'DefaultResult': col_name,
+            'DefaultResult': value_column,
             'Remarks': '',
             'DateTime': splitted[6]
         }
-        result = splitted[col_num]
-        record[col_name] = self.get_result(col_name, result, 0)
+        result = splitted[11]
+        record[value_column] = self.get_result(value_column, result, 0)
 
         # Interim values can get added to record here
-        value_column = 'CorrectionFactor'
-        result = splitted[7]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'RetentionTime'
+        value_column = 'ReturnTime'
         result = splitted[8]
         result = self.get_result(value_column, result, 0)
         record[value_column] = result
 
-        value_column = 'Area'
+        value_column = 'Resp'
         result = splitted[9]
         result = self.get_result(value_column, result, 0)
         record[value_column] = result
 
-        value_column = 'AnalyteQualifier'
+        value_column = 'CalcConc'
+        result = splitted[10]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'Accuracy'
+        result = splitted[12]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'Ratio'
+        result = splitted[13]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'MI'
         result = splitted[14]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'StandardIdentifierRT'
-        result = splitted[15]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'StandardIdentifierArea'
-        result = splitted[16]
         result = self.get_result(value_column, result, 0)
         record[value_column] = result
 

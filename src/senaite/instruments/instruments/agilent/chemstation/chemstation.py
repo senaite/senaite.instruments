@@ -145,25 +145,24 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         record[value_column] = result
 
         # 3 Interim fields
-        value_column = 'RT (min)'
+        value_column = 'ReturnTime'
         result = splitted[2]
         result = self.get_result(value_column, result, 0)
-        record['ReturnTime'] = result
+        record[value_column] = result
 
         value_column = 'Area'
         result = splitted[3]
         result = self.get_result(value_column, result, 0)
-        record['Area'] = result
+        record[value_column] = result
 
-        value_column = 'Q-value'
+        value_column = 'QVal'
         result = splitted[6]
         result = self.get_result(value_column, result, 0)
-        record['QValue'] = result
+        record[value_column] = result
 
         # assign record to kw dict
         kw = splitted[1]
         kw = format_keyword(kw)
-        # self._rawresults[ar_id][0][kw] = record
         self._addRawResult(self._ar_id, {kw: record})
 
         return 0
