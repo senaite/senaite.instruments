@@ -246,6 +246,14 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...                 msg = "Result {} = {}, not 5.0".format(
     ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
+    ...         # if an.getKeyword() == 'TotalTerpenes':
+    ...         #     interims = an.getInterimFields()
+    ...         #     for interim in interims:
+    ...         #         if interim.get('keyword') == 'pest1' and \
+    ...         #            interim.get('value') != 3:
+    ...         #             msg = "Interim result {} = {}, not 3".format(
+    ...         #                 interim.get('keyword'), interim.get('value'))
+    ...         #             self.fail(msg)
     ...
     ...     if 'Import' in globals():
     ...         del Import
