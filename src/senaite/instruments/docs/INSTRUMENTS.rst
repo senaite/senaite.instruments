@@ -164,6 +164,9 @@ Where testing files live::
     >>> interfaces = []
     >>> importer_filename = [] #List of tuples [(importer,filename),(importer, filename)]
     >>> for fl in files:
+    ...     if fl.startswith('.'):
+    ...         # Ignore tmp files
+    ...         continue
     ...     inst_interface = os.path.splitext(fl)[0] 
     ...     inst_path = '.'.join([inst_interface.replace('.', '/'), 'py'])
     ...     if os.path.isfile(os.path.join(instruments_path, inst_path)):
@@ -218,24 +221,31 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...     test_results = eval(results)
     ...     #TODO: Test for interim fields on other files aswell
     ...     analyses = ar.getAnalyses(full_objects=True)
-    ...     if inter[0] in instruments.MULTI_AS_INSTRUMENTS and 'Import finished successfully: 1 Samples and 3 results updated' not in test_results['log']:
+    ...     if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...        'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
     ...         self.fail("Results Update failed for {}".format(inter[0]))
-    ...     if inter[0] in instruments.SINGLE_AS_INSTRUMENTS and 'Import finished successfully: 1 Samples and 1 results updated' not in test_results['log']:
+    ...     if inter[0] in instruments.SINGLE_AS_INSTRUMENTS and \
+    ...        'Import finished successfully: 1 Samples and 1 results updated' not in test_results['log']:
     ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...
     ...     for an in analyses:
     ...         if an.getKeyword() == 'Ca':
-    ...             if an.getResult() != '0.0':
-    ...                 msg = "Result {} was not updated".format(an.getKeyword())
+    ...             if an.getResult() != '3.0':
+    ...                 msg = "Result {} = {}, not 3.0".format(
+    ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         # if an.getKeyword() == 'Mg':
-    ...         #     if an.getResult() != '2.0':
-    ...         #         msg = "Result {} was not updated".format(an.getKeyword())
-    ...         #         self.fail(msg)
-    ...         # if an.getKeyword() == 'THCaCO3':
-    ...         #     if an.getResult() != '2.0':
-    ...         #         msg = "Result {} was not updated".format(an.getKeyword())
-    ...         #         self.fail(msg)
+    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...            an.getKeyword() == 'Mg':
+    ...              if an.getResult() != '2.0':
+    ...                 msg = "Result {} = {}, not 2.0".format(
+    ...                     an.getKeyword(), an.getResult())
+    ...                 self.fail(msg)
+    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...            an.getKeyword() == 'THCaCO3':
+    ...             if an.getResult() != '5.0':
+    ...                 msg = "Result {} = {}, not 5.0".format(
+    ...                     an.getKeyword(), an.getResult())
+    ...                 self.fail(msg)
     ...
     ...     if 'Import' in globals():
     ...         del Import
