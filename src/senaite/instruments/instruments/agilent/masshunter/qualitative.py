@@ -8,10 +8,11 @@ from bika.lims.exportimport.instruments.instrument import format_keyword
 from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.exportimport.instruments.resultsimport import InstrumentCSVResultsFileParser
 from bika.lims.utils import t
+from DateTime import DateTime
 from zope.interface import implements
 
 
-class QuantitativeParser(InstrumentCSVResultsFileParser):
+class QualitativeParser(InstrumentCSVResultsFileParser):
     """ Parser
     """
 
@@ -19,7 +20,6 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
         InstrumentCSVResultsFileParser.__init__(self, infile, 'CSV')
         self._end_header = False
         self._delimiter = ','
-        self._kw = None
 
     def _parseline(self, line):
         if self._end_header:
@@ -37,9 +37,7 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
             return 0
 
         splitted = [token.strip() for token in line.split(self._delimiter)]
-        if splitted[0].startswith('Sample'):
-            self._kw = splitted[7].split(' ')[0]
-            self._kw = format_keyword(self._kw)
+        if len(filter(lambda x: len(x), splitted)) == 0:
             self._end_header = True
 
         return 0
@@ -52,53 +50,43 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
             return 0
 
         # Header
-        if splitted[2] == 'Name':
+        if splitted[0].startswith('Score'):
             self._header = splitted
             return 0
 
-        ar_id = splitted[2]
-        value_column = 'FinalConc'
+        ar_id = splitted[104]
+        kw = format_keyword(splitted[18])
+        analysis_date = str(DateTime())[:16]
+
+        # Result field
+        column_name = 'mzProd'
+        column_number = 68
+        result = splitted[column_number]
         record = {
-            'DefaultResult': value_column,
+            'DefaultResult': column_name,
             'Remarks': '',
-            'DateTime': splitted[6]
+            'DateTime': analysis_date
         }
-        result = splitted[11]
-        record[value_column] = self.get_result(value_column, result, 0)
+        record[column_name] = self.get_result(column_name, result, 0)
 
         # Interim values can get added to record here
-        value_column = 'ReturnTime'
-        result = splitted[8]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'Resp'
-        result = splitted[9]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'CalcConc'
-        result = splitted[10]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'Accuracy'
-        result = splitted[12]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'Ratio'
-        result = splitted[13]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
-
-        value_column = 'MI'
-        result = splitted[14]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
+        interims = [
+            ('Label', 22),
+            ('Area', 48),
+            ('File', 54),
+            ('End', 55),
+            ('mz', 67),
+            ('ReturnTime', 69),
+            ('Start', 71),
+            ('Width', 72),
+            ('AcqMethod', 110),
+        ]
+        for column_name, column_number in interims:
+            result = splitted[column_number]
+            record[column_name] = self.get_result(column_name, result, 0)
 
         # Append record
-        self._addRawResult(ar_id, {self._kw: record})
+        self._addRawResult(ar_id, {kw: record})
 
         return 0
 
@@ -118,14 +106,14 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
         return
 
 
-class QuantitativeImporter(AnalysisResultsImporter):
+class QualitativeImporter(AnalysisResultsImporter):
     """ Importer
     """
 
 
-class quantitativeimport(object):
+class qualitativeimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Agilent Masshunter Quantitative"
+    title = "Agilent Masshunter Qualitative"
 
     def __init__(self, context):
         self.context = context
@@ -149,7 +137,7 @@ class quantitativeimport(object):
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
         if fileformat in ('csv'):
-            parser = QuantitativeParser(infile)
+            parser = QualitativeParser(infile)
         else:
             errors.append(t(_("Unrecognized file format ${fileformat}",
                               mapping={"fileformat": fileformat})))
@@ -170,7 +158,7 @@ class quantitativeimport(object):
             elif override == 'overrideempty':
                 over = [True, True]
 
-            importer = QuantitativeImporter(
+            importer = QualitativeImporter(
                 parser=parser,
                 context=context,
                 allowed_ar_states=status,

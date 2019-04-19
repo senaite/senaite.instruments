@@ -21,6 +21,7 @@
 # instruments that record a single AS in the result file
 SINGLE_AS_INSTRUMENTS = [
     'agilent.masshunter.quantitative',
+    'agilent.masshunter.qualitative',
 ]
 # instruments that record a multiple ASs in the result file
 MULTI_AS_INSTRUMENTS = [
