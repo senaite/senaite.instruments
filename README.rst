@@ -88,7 +88,8 @@ Activate the Add-on
 
 Please browse to the *Add-ons* Controlpanel and activate the **SENAITE INSTRUMENTS** Add-on:
 
-<img src="static/activate_addon.png" alt="Activate SENAITE INSTRUMENTS Add-on" />
+.. image:: static/activate_addon.png
+    :alt: Activate SENAITE INSTRUMENTS Add-on
 
 Contribute
 ==========
