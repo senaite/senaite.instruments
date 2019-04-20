@@ -1,4 +1,5 @@
-— **SENAITE.INSTRUMENTS**: *Instrument results import and export add-on for SENAITE*
+*Instrument results import and export add-on for SENAITE*
+=========================================================
 
 .. image:: https://img.shields.io/github/issues-pr/senaite/senaite.instruments.svg?style=flat-square
    :target: https://github.com/senaite/senaite.instruments/pulls
@@ -81,6 +82,13 @@ The following versions are required for SENAITE INSTRUMENTS:
 -  Plone 4.3.18
 -  senaite.lims >= 1.3.0
 
+
+Activate the Add-on
+-------------------
+
+Please browse to the *Add-ons* Controlpanel and activate the **SENAITE INSTRUMENTS** Add-on:
+
+<img src="static/activate_addon.png" alt="Activate SENAITE INSTRUMENTS Add-on" />
 
 Contribute
 ==========
