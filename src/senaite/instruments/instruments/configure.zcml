@@ -4,6 +4,33 @@
 
    <adapter
     for="*"
+    name="chemstation_importer"
+    factory=".agilent.chemstation.chemstation.chemstationimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+<!-- Incomplete ...
+   <adapter
+    for="*"
+    name="chemstation_exporter"
+    factory=".agilent.chemstation.chemstation.chemstationexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+... incomplete -->
+
+   <adapter
+    for="*"
+    name="masshunter_qualitative_importer"
+    factory=".agilent.masshunter.qualitative.qualitativeimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="masshunter_quantitative_importer"
+    factory=".agilent.masshunter.quantitative.quantitativeimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+<!-- Incomplete ...
+   <adapter
+    for="*"
     name="xcalibur_importer"
     factory=".xcalibur.instrument.xcaliburimport"
     provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
@@ -13,17 +40,6 @@
     name="xcalibur_exporter"
     factory=".xcalibur.instrument.xcaliburexport"
     provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
-
-   <adapter
-    for="*"
-    name="masshunter_importer"
-    factory=".agilent.masshunter.instrument.masshunterimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
-
-   <adapter
-    for="*"
-    name="masshunter_exporter"
-    factory=".agilent.masshunter.instrument.masshunterexport"
-    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+... incomplete -->
 
 </configure>

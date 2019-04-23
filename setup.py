@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-version = "1.2.0"
+version = "1.0.0"
 
 with open("docs/About.rst", "r") as fh:
     long_description = fh.read()
@@ -42,6 +42,7 @@ setup(
         "setuptools",
         "senaite.api",
         "senaite.core",
+        "xlrd",
     ],
     extras_require={
         "test": [

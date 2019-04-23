@@ -18,7 +18,7 @@ Needed imports::
     >>> from bika.lims.utils.analysisrequest import create_analysisrequest
     >>> from DateTime import DateTime
 
-    >>> from bika.lims.exportimport import instruments
+    >>> from senaite.instruments import instruments
     >>> from zope.publisher.browser import FileUpload, TestRequest
 
 Functional helpers::
@@ -148,23 +148,25 @@ Create an `AnalysisRequest` with this `AnalysisService` and receive it::
     <AnalysisRequest at /plone/clients/client-1/H2O-0001>
     >>> ar.getReceivedBy()
     ''
-    >>> wf = api.portal.get_tool('portal_workflow')
+    >>> wf = api.get_tool('portal_workflow')
     >>> wf.doActionFor(ar, 'receive')
     >>> ar.getReceivedBy()
     'test_user_1_'
-    >>> import pdb; pdb.set_trace()
 
 
 Instruments files path
 ----------------------
 Where testing files live::
 
-    >>> files_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'files/instruments'))
-    >>> instruments_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'exportimport/instruments'))
+    >>> files_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'tests/files/instruments'))
+    >>> instruments_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'instruments'))
     >>> files = os.listdir(files_path)
     >>> interfaces = []
     >>> importer_filename = [] #List of tuples [(importer,filename),(importer, filename)]
     >>> for fl in files:
+    ...     if fl.startswith('.'):
+    ...         # Ignore tmp files
+    ...         continue
     ...     inst_interface = os.path.splitext(fl)[0] 
     ...     inst_path = '.'.join([inst_interface.replace('.', '/'), 'py'])
     ...     if os.path.isfile(os.path.join(instruments_path, inst_path)):
@@ -183,7 +185,7 @@ Availability of instrument interface
 Check that the instrument interface is available::
 
     >>> exims = []
-    >>> for exim_id in instruments.__all__:
+    >>> for exim_id in instruments.ALL_INSTRUMENTS:
     ...     exims.append(exim_id)
     >>> [f for f in interfaces if f not in exims] 
     []
@@ -195,12 +197,14 @@ Create an `Instrument` and assign to it the tested Import Interface::
     >>> for inter in interfaces:
     ...     title = inter.split('.')[0].title()
     ...     instrument = api.create(bika_instruments, "Instrument", title=title)
-    ...     instrument.setImportDataInterface([inter])
-    ...     if instrument.getImportDataInterface() != [inter]:
+    ...     importer_class = 'senaite.instruments.instruments.{}.{}import'.format(inter, inter.split('.')[-1])
+    ...     instrument.setImportDataInterface([importer_class])
+    ...     if instrument.getImportDataInterface() != [importer_class]:
     ...         self.fail('Instrument Import Data Interface did not get set')
     
     >>> for inter in importer_filename:
-    ...     exec('from bika.lims.exportimport.instruments.{} import Import'.format(inter[0]))
+    ...     importer_class = '{}import'.format(inter[0].split('.')[-1])
+    ...     exec('from senaite.instruments.instruments.{} import {}'.format(inter[0], importer_class))
     ...     filename = os.path.join(files_path, inter[1])
     ...     data = open(filename, 'r').read()
     ...     import_file = FileUpload(TestFile(cStringIO.StringIO(data), inter[1]))
@@ -212,43 +216,44 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...                                sample='requestid',
     ...                                instrument=''))
     ...     context = self.portal
-    ...     results = Import(context, request)
+    ...     exec('importer = {}(context)'.format(importer_class))
+    ...     results = importer.Import(context, request)
     ...     test_results = eval(results)
     ...     #TODO: Test for interim fields on other files aswell
     ...     analyses = ar.getAnalyses(full_objects=True)
-    ...     if 'Parsing file generic.two_dimension.csv' in test_results['log']:
-    ...         # Testing also for interim fields, only for `generic.two_dimension` interface
-    ...         # TODO: Test for - H2O-0001: calculated result for 'THCaCO3': '2.0'
-    ...         if 'Import finished successfully: 1 Samples and 3 results updated' not in test_results['log']:
-    ...             self.fail("Results Update failed")
-    ...         if "H2O-0001 result for 'TotalTerpenes:pest1': '1'" not in test_results['log']:
-    ...             self.fail("pest1 did not get updated")
-    ...         if "H2O-0001 result for 'TotalTerpenes:pest2': '1'" not in test_results['log']:
-    ...             self.fail("pest2 did not get updated")
-    ...         if "H2O-0001 result for 'TotalTerpenes:pest3': '1'" not in test_results['log']:
-    ...             self.fail("pest3 did not get updated")
-    ...         for an in analyses:
-    ...             if an.getKeyword() == 'TotalTerpenes':
-    ...                 if an.getResult() != 'PASS':
-    ...                     msg = "{}:Result did not get updated".format(an.getKeyword())
-    ...                     self.fail(msg)
-    ...
-    ...     elif 'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
-    ...         self.fail("Results Update failed")
+    ...     if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...        'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
+    ...         self.fail("Results Update failed for {}".format(inter[0]))
+    ...     if inter[0] in instruments.SINGLE_AS_INSTRUMENTS and \
+    ...        'Import finished successfully: 1 Samples and 1 results updated' not in test_results['log']:
+    ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...
     ...     for an in analyses:
-    ...         if an.getKeyword() ==  'Ca':
-    ...             if an.getResult() != '0.0':
-    ...                 msg = "{}:Result did not get updated".format(an.getKeyword())
+    ...         if an.getKeyword() == 'Ca':
+    ...             if an.getResult() != '3.0':
+    ...                 msg = "Result {} = {}, not 3.0".format(
+    ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         if an.getKeyword() ==  'Mg':
-    ...             if an.getResult() != '2.0':
-    ...                 msg = "{}:Result did not get updated".format(an.getKeyword())
+    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...            an.getKeyword() == 'Mg':
+    ...              if an.getResult() != '2.0':
+    ...                 msg = "Result {} = {}, not 2.0".format(
+    ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         if an.getKeyword() ==  'THCaCO3':
-    ...             if an.getResult() != '2.0':
-    ...                 msg = "{}:Result did not get updated".format(an.getKeyword())
+    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...            an.getKeyword() == 'THCaCO3':
+    ...             if an.getResult() != '5.0':
+    ...                 msg = "Result {} = {}, not 5.0".format(
+    ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
+    ...         # if an.getKeyword() == 'TotalTerpenes':
+    ...         #     interims = an.getInterimFields()
+    ...         #     for interim in interims:
+    ...         #         if interim.get('keyword') == 'pest1' and \
+    ...         #            interim.get('value') != 3:
+    ...         #             msg = "Interim result {} = {}, not 3".format(
+    ...         #                 interim.get('keyword'), interim.get('value'))
+    ...         #             self.fail(msg)
     ...
     ...     if 'Import' in globals():
     ...         del Import

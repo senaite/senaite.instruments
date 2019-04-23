@@ -1,0 +1,3 @@
+Sample,,,,,,,Ca Method,Ca Results,,,,,Qualifier (173.0 -> 135.0) Results,,Triphenylphosphate(TPP-IS) (ISTD) Results,,Qualifier (326.0 -> 215.0) Results,
+,,Name,Data File,Type,Level,Acq. Date-Time,Exp. Conc.,RT,Resp.,Calc. Conc.,Final Conc.,Accuracy,Ratio,MI,RT,Resp.,Ratio,MI
+!,!,H2O-0001,,Sample,,2/28/2019 12:14 AM,,26.563,1091082,0.1034,3.0,,3,FALSE,26.094,2592849,46.2,FALSE

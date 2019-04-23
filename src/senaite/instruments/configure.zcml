@@ -8,7 +8,7 @@
 
   <genericsetup:registerProfile
       name="default"
-      title="SENAITE INSTRUCTIONS"
+      title="SENAITE INSTRUMENTS"
       directory="profiles/default"
       description="Installs the senaite.instruments add-on."
       provides="Products.GenericSetup.interfaces.EXTENSION"
