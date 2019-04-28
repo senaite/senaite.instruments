@@ -19,6 +19,7 @@ Needed imports::
     >>> from DateTime import DateTime
 
     >>> from senaite.instruments import instruments
+    >>> from senaite.instruments.tests import test_setup
     >>> from zope.publisher.browser import FileUpload, TestRequest
 
 Functional helpers::
@@ -55,6 +56,42 @@ so here we will assume the role of Lab Manager::
 
 Import test
 -----------
+
+Instruments files path
+----------------------
+Where testing files live::
+
+    >>> files_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'tests/files/instruments'))
+    >>> instruments_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'instruments'))
+    >>> files = os.listdir(files_path)
+    >>> interfaces = []
+    >>> importer_filename = [] #List of tuples [(importer,filename),(importer, filename)]
+    >>> for fl in files:
+    ...     if fl.startswith('.'):
+    ...         # Ignore tmp files
+    ...         continue
+    ...     inst_interface = os.path.splitext(fl)[0] 
+    ...     inst_path = '.'.join([inst_interface.replace('.', '/'), 'py'])
+    ...     if os.path.isfile(os.path.join(instruments_path, inst_path)):
+    ...         interfaces.append(inst_interface)
+    ...         importer_filename.append((inst_interface, fl))
+    ...     else:
+    ...         inst_path = '.'.join([fl.replace('.', '/'), 'py'])
+    ...         if os.path.isfile(os.path.join(instruments_path, inst_path)):
+    ...             interfaces.append(fl)
+    ...             importer_filename.append((fl, fl))
+    ...         else:
+    ...             self.fail('File {} found does match any import interface'.format(fl))
+
+Availability of instrument interface
+------------------------------------
+Check that the instrument interface is available::
+
+    >>> exims = []
+    >>> for exim_id in test_setup.ALL_INSTRUMENTS:
+    ...     exims.append(exim_id)
+    >>> [f for f in interfaces if f not in exims] 
+    []
 
 Required steps: Create and receive Analysis Request for import test
 ...................................................................
@@ -128,6 +165,33 @@ This service matches the service specified in the file from which the import wil
     >>> analysisservice5
     <AnalysisService at /plone/bika_setup/bika_analysisservices/analysisservice-5>
 
+    >>> service_uids = [
+    ...     analysisservice1.UID(),
+    ...     analysisservice2.UID(),
+    ...     analysisservice3.UID(),
+    ...     analysisservice4.UID(),
+    ...     analysisservice5.UID()
+    ... ]
+
+Extend `AnalysisService` with test config data::
+
+    >>> for inter in interfaces:
+    ...     if inter not in test_setup.INTERIM_INSTRUMENTS.keys():
+    ...         continue
+    ...     as_data = test_setup.INTERIM_INSTRUMENTS[inter]
+    ...     interims = as_data['interims']
+    ...     interim_calc = api.create(bika_calculations, 'Calculation', title='{}-Calc'.format(as_data['as_title']))
+    ...     interim_calc.setInterimFields(interims)
+    ...     self.assertEqual(interim_calc.getInterimFields(), interims)
+    ...     interim_calc.setFormula(as_data['formula'])
+    ...     new_as = api.create(bika_analysisservices, 'AnalysisService', title=as_data['as_title'], Keyword=as_data['as_keyword'])
+    ...     new_as.setUseDefaultCalculation(False)
+    ...     new_as.setCalculation(interim_calc)
+    ...     new_as.setInterimFields(interims)
+    ...     service_uids.append(new_as.UID())
+    ...     new_as.Title() == as_data['as_title']
+    True
+
 Create an `AnalysisRequest` with this `AnalysisService` and receive it::
 
     >>> values = {
@@ -137,12 +201,6 @@ Create an `AnalysisRequest` with this `AnalysisService` and receive it::
     ...           'DateSampled': date_now,
     ...           'SampleType': sampletype.UID()
     ...          }
-    >>> service_uids = [analysisservice1.UID(),
-    ...                 analysisservice2.UID(),
-    ...                 analysisservice3.UID(),
-    ...                 analysisservice4.UID(),
-    ...                 analysisservice5.UID()
-    ...                ]
     >>> ar = create_analysisrequest(client, request, values, service_uids)
     >>> ar
     <AnalysisRequest at /plone/clients/client-1/H2O-0001>
@@ -153,42 +211,6 @@ Create an `AnalysisRequest` with this `AnalysisService` and receive it::
     >>> ar.getReceivedBy()
     'test_user_1_'
 
-
-Instruments files path
-----------------------
-Where testing files live::
-
-    >>> files_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'tests/files/instruments'))
-    >>> instruments_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'instruments'))
-    >>> files = os.listdir(files_path)
-    >>> interfaces = []
-    >>> importer_filename = [] #List of tuples [(importer,filename),(importer, filename)]
-    >>> for fl in files:
-    ...     if fl.startswith('.'):
-    ...         # Ignore tmp files
-    ...         continue
-    ...     inst_interface = os.path.splitext(fl)[0] 
-    ...     inst_path = '.'.join([inst_interface.replace('.', '/'), 'py'])
-    ...     if os.path.isfile(os.path.join(instruments_path, inst_path)):
-    ...         interfaces.append(inst_interface)
-    ...         importer_filename.append((inst_interface, fl))
-    ...     else:
-    ...         inst_path = '.'.join([fl.replace('.', '/'), 'py'])
-    ...         if os.path.isfile(os.path.join(instruments_path, inst_path)):
-    ...             interfaces.append(fl)
-    ...             importer_filename.append((fl, fl))
-    ...         else:
-    ...             self.fail('File {} found does match any import interface'.format(fl))
-
-Availability of instrument interface
-------------------------------------
-Check that the instrument interface is available::
-
-    >>> exims = []
-    >>> for exim_id in instruments.ALL_INSTRUMENTS:
-    ...     exims.append(exim_id)
-    >>> [f for f in interfaces if f not in exims] 
-    []
 
 Assigning the Import Interface to an Instrument
 -----------------------------------------------
@@ -203,6 +225,7 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...         self.fail('Instrument Import Data Interface did not get set')
     
     >>> for inter in importer_filename:
+    ...     as_data = test_setup.INTERIM_INSTRUMENTS.get(inter[0])
     ...     importer_class = '{}import'.format(inter[0].split('.')[-1])
     ...     exec('from senaite.instruments.instruments.{} import {}'.format(inter[0], importer_class))
     ...     filename = os.path.join(files_path, inter[1])
@@ -221,40 +244,47 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...     test_results = eval(results)
     ...     #TODO: Test for interim fields on other files aswell
     ...     analyses = ar.getAnalyses(full_objects=True)
-    ...     if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...     if inter[0] in test_setup.MULTI_AS_INSTRUMENTS and \
     ...        'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
     ...         self.fail("Results Update failed for {}".format(inter[0]))
-    ...     if inter[0] in instruments.SINGLE_AS_INSTRUMENTS and \
+    ...     if inter[0] in test_setup.SINGLE_AS_INSTRUMENTS and \
     ...        'Import finished successfully: 1 Samples and 1 results updated' not in test_results['log']:
     ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...
     ...     for an in analyses:
-    ...         if an.getKeyword() == 'Ca':
+    ...         if inter[0] not in test_setup.NO_AS_INSTRUMENTS and \
+    ...            an.getKeyword() == 'Ca':
     ...             if an.getResult() != '3.0':
     ...                 msg = "Result {} = {}, not 3.0".format(
     ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...         if inter[0] in test_setup.MULTI_AS_INSTRUMENTS and \
     ...            an.getKeyword() == 'Mg':
     ...              if an.getResult() != '2.0':
     ...                 msg = "Result {} = {}, not 2.0".format(
     ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         if inter[0] in instruments.MULTI_AS_INSTRUMENTS and \
+    ...         if inter[0] in test_setup.MULTI_AS_INSTRUMENTS and \
     ...            an.getKeyword() == 'THCaCO3':
     ...             if an.getResult() != '5.0':
     ...                 msg = "Result {} = {}, not 5.0".format(
     ...                     an.getKeyword(), an.getResult())
     ...                 self.fail(msg)
-    ...         # if an.getKeyword() == 'TotalTerpenes':
-    ...         #     interims = an.getInterimFields()
-    ...         #     for interim in interims:
-    ...         #         if interim.get('keyword') == 'pest1' and \
-    ...         #            interim.get('value') != 3:
-    ...         #             msg = "Interim result {} = {}, not 3".format(
-    ...         #                 interim.get('keyword'), interim.get('value'))
-    ...         #             self.fail(msg)
+    ...         if inter[0] in test_setup.INTERIM_INSTRUMENTS and \
+    ...            an.getKeyword() == as_data['as_keyword']:
+    ...             if an.getResult() != as_data['result']:
+    ...                 msg = "Result {} = {}, not {}".format(
+    ...                     an.getKeyword(), an.getResult(), as_data['result'])
+    ...                 self.fail(msg)
+    ...              # an_interims = an.getInterimFields()
+    ...              # test_interims = as_data['interims']
+    ...              # for an_interim in an_interims:
+    ...              #     if as_interim.get('keyword') == 'pest1' and \
+    ...              #        interim.get('value') != 3:
+    ...              #         msg = "Interim result {} = {}, not 3".format(
+    ...              #             interim.get('keyword'), interim.get('value'))
+    ...              #         self.fail(msg)
     ...
-    ...     if 'Import' in globals():
+    ...     if 'port' in globals():
     ...         del Import
 

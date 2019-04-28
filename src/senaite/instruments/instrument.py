@@ -74,24 +74,23 @@ class FileStub:
 class InstrumentXLSResultsFileParser(InstrumentResultsFileParser):
     """ Parser
     """
-    def __init__(self, infile, mimetype='xlsx'):
-        InstrumentResultsFileParser.__init__(self, infile, mimetype.upper())
+    def __init__(self, infile, worksheet, encoding='xlsx'):
+        InstrumentResultsFileParser.__init__(self, infile, encoding.upper())
         # Convert xls to csv
         self._delimiter = "|"
-        if mimetype == 'xlsx':
+        if encoding == 'xlsx':
             csv_data = xlsx_to_csv(
-                infile, worksheet=2, delimiter=self._delimiter)
-        elif mimetype == 'xls':
+                infile, worksheet=worksheet, delimiter=self._delimiter)
+        elif encoding == 'xls':
             csv_data = xls_to_csv(
-                infile, worksheet=2, delimiter=self._delimiter)
+                infile, worksheet=worksheet, delimiter=self._delimiter)
 
         # adpat csv_data into a FileUpload for parse method
         self._infile = infile
         stub = FileStub(file=csv_data, name=str(infile.filename))
         self._csvfile = FileUpload(stub)
 
-        self._encoding = None
-        self._mimetype = mimetype
+        self._encoding = encoding
         self._end_header = False
 
     def parse(self):
@@ -101,12 +100,10 @@ class InstrumentXLSResultsFileParser(InstrumentResultsFileParser):
         jump = 0
         # We test in import functions if the file was uploaded
         try:
-            if self._encoding:
-                f = codecs.open(infile.name, 'r', encoding=self._encoding)
-            else:
-                f = open(infile.name, 'rU')
+            f = open(infile.name, 'rU')
         except AttributeError:
             f = infile
+
         for line in f.readlines():
             self._numline += 1
             if jump == -1:
