@@ -18,14 +18,3 @@
 # Copyright 2018-2019 by it's authors.
 # Some rights reserved, see README and LICENSE.
 
-# instruments that record a single AS in the result file
-SINGLE_AS_INSTRUMENTS = [
-    'agilent.masshunter.quantitative',
-    'agilent.masshunter.qualitative',
-]
-# instruments that record a multiple ASs in the result file
-MULTI_AS_INSTRUMENTS = [
-    'agilent.chemstation.chemstation',
-]
-# list of all instruments in this add on
-ALL_INSTRUMENTS = SINGLE_AS_INSTRUMENTS + MULTI_AS_INSTRUMENTS

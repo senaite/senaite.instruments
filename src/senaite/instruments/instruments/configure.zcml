@@ -28,6 +28,12 @@
     factory=".agilent.masshunter.quantitative.quantitativeimport"
     provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
 
+   <adapter
+    for="*"
+    name="masshunter_aorc_importer"
+    factory=".agilent.masshunter.aorc.aorcimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
 <!-- Incomplete ...
    <adapter
     for="*"

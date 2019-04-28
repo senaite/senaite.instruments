@@ -1,103 +1,30 @@
-import csv
 import json
 import traceback
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
-from bika.lims.exportimport.instruments import IInstrumentExportInterface
 from bika.lims.exportimport.instruments import IInstrumentImportInterface
 from bika.lims.exportimport.instruments.instrument import format_keyword
 from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.utils import t
-from cStringIO import StringIO
 from DateTime import DateTime
-from plone.i18n.normalizer.interfaces import IIDNormalizer
 from senaite.instruments.instrument import InstrumentXLSResultsFileParser
-from zope.component import getUtility
 from zope.interface import implements
 
 
-class chemstationexport(object):
-    implements(IInstrumentExportInterface)
-    title = "ChemStationExporter"
-
-    def __init__(self, context):
-        self.context = context
-        self.request = None
-
-    def Export(self, context, request):
-        tray = 1
-        now = DateTime().strftime('%Y%m%d-%H%M')
-        uc = api.get_tool('uid_catalog')
-        instrument = context.getInstrument()
-        norm = getUtility(IIDNormalizer).normalize
-        filename = '{}-{}.csv'.format(
-            context.getId(), norm(instrument.getDataInterface()))
-        listname = '{}_{}_{}'.format(
-            context.getId(), norm(instrument.Title()), now)
-        options = {
-            'dilute_factor': 1,
-            'method': 'F SO2 & T SO2'
-        }
-        for k, v in instrument.getDataInterfaceOptions():
-            options[k] = v
-
-        # for looking up "cup" number (= slot) of ARs
-        parent_to_slot = {}
-        layout = context.getLayout()
-        for x in range(len(layout)):
-            a_uid = layout[x]['analysis_uid']
-            p_uid = uc(UID=a_uid)[0].getObject().aq_parent.UID()
-            layout[x]['parent_uid'] = p_uid
-            if p_uid not in parent_to_slot.keys():
-                parent_to_slot[p_uid] = int(layout[x]['position'])
-
-        # write rows, one per PARENT
-        header = [listname, options['method']]
-        rows = []
-        rows.append(header)
-        tmprows = []
-        ARs_exported = []
-        for x in range(len(layout)):
-            # create batch header row
-            c_uid = layout[x]['container_uid']
-            p_uid = layout[x]['parent_uid']
-            if p_uid in ARs_exported:
-                continue
-            cup = parent_to_slot[p_uid]
-            tmprows.append([tray,
-                            cup,
-                            p_uid,
-                            c_uid,
-                            options['dilute_factor'],
-                            ""])
-            ARs_exported.append(p_uid)
-        tmprows.sort(lambda a, b: cmp(a[1], b[1]))
-        rows += tmprows
-
-        ramdisk = StringIO()
-        writer = csv.writer(ramdisk, delimiter=';')
-        assert(writer)
-        writer.writerows(rows)
-        result = ramdisk.getvalue()
-        ramdisk.close()
-
-        # stream file to browser
-        setheader = request.RESPONSE.setHeader
-        setheader('Content-Length', len(result))
-        setheader('Content-Type', 'text/comma-separated-values')
-        setheader('Content-Disposition', 'inline; filename=%s' % filename)
-        request.RESPONSE.write(result)
-
-
-class ChemStationParser(InstrumentXLSResultsFileParser):
+class AORCParser(InstrumentXLSResultsFileParser):
     """ Parser
     """
     def __init__(self, infile, encoding=None):
         InstrumentXLSResultsFileParser.__init__(
-            self, infile, worksheet=2, encoding=encoding)
+            self, infile, worksheet=0, encoding=encoding)
         self._end_header = False
+        self._delimiter = '|'
         self._ar_id = None
+        self._kw = None
+        self._retentiontime = None
+        self._retentiontimeref = None
+        self._ions = []
 
     def _parseline(self, line):
         if self._end_header:
@@ -105,18 +32,9 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         return self.parse_headerline(line)
 
     def parse_headerline(self, line):
-        """ Parses header lines
+        """ Parse everything in parse_resultsline
         """
-        if self._end_header:
-            # Header already processed
-            return 0
-
-        splitted = [token.strip() for token in line.split(self._delimiter)]
-        if len(filter(lambda x: len(x), splitted)) == 0:
-            self._end_header = True
-
-        if splitted[0].startswith('Sample Name:'):
-            self._ar_id = splitted[0].split(':')[1].strip()
+        self._end_header = True
 
         return 0
 
@@ -127,41 +45,55 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         if len(filter(lambda x: len(x), splitted)) == 0:
             return 0
 
-        # Header
-        if splitted[0] == 'Comp #':
-            self._header = splitted
+        # AR id
+        if splitted[0] == 'Laboratory number':
+            self._ar_id = splitted[2]
             return 0
 
-        # DefaultResult
-        value_column = 'Amount'
-        record = {
-            'DefaultResult': value_column,
-            'Remarks': ''
-        }
-        result = splitted[4]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
+        if splitted[0] == 'Molecule':
+            self._kw = format_keyword(splitted[2])
+            return 0
 
-        # 3 Interim fields
-        value_column = 'ReturnTime'
-        result = splitted[2]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
+        if splitted[0] == 'Retention time in the molecule':
+            if self._retentiontime:
+                self._retentiontimeref = splitted[1]
+            else:
+                self._retentiontime = splitted[1]
+            return 0
 
-        value_column = 'Area'
-        result = splitted[3]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
+        if splitted[0].startswith('ion'):
+            ion_number = splitted[0].split(' ')[1]
+            self._ions.append({
+                'Ion{}mz'.format(ion_number): splitted[1],
+                'Ion{}Area'.format(ion_number): splitted[2],
+                'Ion{}AreaRef'.format(ion_number): splitted[3],
+                'Ion{}SigNseRat'.format(ion_number): splitted[4],
+            })
 
-        value_column = 'QVal'
-        result = splitted[6]
-        result = self.get_result(value_column, result, 0)
-        record[value_column] = result
+        if splitted[0] == 'PARAMETERS TO BE CONSIDERED FOR THE CALCULATION':
+            # No result field
+            record = {
+                'DefaultResult': None,
+                'Remarks': '',
+                'DateTime': str(DateTime())[:16]
+            }
 
-        # assign record to kw dict
-        kw = splitted[1]
-        kw = format_keyword(kw)
-        self._addRawResult(self._ar_id, {kw: record})
+            # Interim values
+            column_name = 'RetentionTime'
+            record[column_name] = self.get_result(
+                column_name, self._retentiontime, 0)
+
+            column_name = 'RetentionTimeRef'
+            record[column_name] = self.get_result(
+                column_name, self._retentiontimeref, 0)
+
+            for ion in self._ions:
+                for interim_key in ion.keys():
+                    record[interim_key] = self.get_result(
+                        interim_key, ion[interim_key], 0)
+
+            # Append record
+            self._addRawResult(self._ar_id, {self._kw: record})
 
         return 0
 
@@ -181,7 +113,7 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         return
 
 
-class ChemStationImporter(AnalysisResultsImporter):
+class AORCImporter(AnalysisResultsImporter):
     """ Importer
     """
 
@@ -207,9 +139,9 @@ def __init__(self, parser, context,  override,
             instrument_uid=instrument_uid)
 
 
-class chemstationimport(object):
+class aorcimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Agilent Masshunter ChemStation"
+    title = "Agilent Masshunter AORC"
 
     def __init__(self, context):
         self.context = context
@@ -233,7 +165,7 @@ class chemstationimport(object):
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
         if fileformat in ('xls', 'xlsx'):
-            parser = ChemStationParser(infile, encoding=fileformat)
+            parser = AORCParser(infile, encoding=fileformat)
         else:
             errors.append(t(_("Unrecognized file format ${fileformat}",
                               mapping={"fileformat": fileformat})))
@@ -254,7 +186,7 @@ class chemstationimport(object):
             elif override == 'overrideempty':
                 over = [True, True]
 
-            importer = ChemStationImporter(
+            importer = AORCImporter(
                 parser=parser,
                 context=context,
                 allowed_ar_states=status,
