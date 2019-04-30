@@ -189,8 +189,7 @@ Extend `AnalysisService` with test config data::
     ...     new_as.setCalculation(interim_calc)
     ...     new_as.setInterimFields(interims)
     ...     service_uids.append(new_as.UID())
-    ...     new_as.Title() == as_data['as_title']
-    True
+    ...     self.assertEqual(new_as.Title(), as_data['as_title'])
 
 Create an `AnalysisRequest` with this `AnalysisService` and receive it::
 
@@ -252,7 +251,7 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...
     ...     for an in analyses:
-    ...         if inter[0] not in test_setup.NO_AS_INSTRUMENTS and \
+    ...         if inter[0] in test_setup.SINGLE_AS_INSTRUMENTS + test_setup.MULTI_AS_INSTRUMENTS and \
     ...            an.getKeyword() == 'Ca':
     ...             if an.getResult() != '3.0':
     ...                 msg = "Result {} = {}, not 3.0".format(

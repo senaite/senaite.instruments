@@ -57,14 +57,12 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
             return 0
 
         ar_id = splitted[2]
-        value_column = 'FinalConc'
+        # No result field
         record = {
-            'DefaultResult': value_column,
+            'DefaultResult': None,
             'Remarks': '',
             'DateTime': splitted[6]
         }
-        result = splitted[11]
-        record[value_column] = self.get_result(value_column, result, 0)
 
         # Interim values can get added to record here
         value_column = 'ReturnTime'
@@ -79,6 +77,11 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
 
         value_column = 'CalcConc'
         result = splitted[10]
+        result = self.get_result(value_column, result, 0)
+        record[value_column] = result
+
+        value_column = 'FinalConc'
+        result = splitted[11]
         result = self.get_result(value_column, result, 0)
         record[value_column] = result
 

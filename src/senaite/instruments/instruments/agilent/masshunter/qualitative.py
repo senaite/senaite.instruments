@@ -59,15 +59,11 @@ class QualitativeParser(InstrumentCSVResultsFileParser):
         analysis_date = str(DateTime())[:16]
 
         # Result field
-        column_name = 'mzProd'
-        column_number = 68
-        result = splitted[column_number]
         record = {
-            'DefaultResult': column_name,
+            'DefaultResult': None,
             'Remarks': '',
             'DateTime': analysis_date
         }
-        record[column_name] = self.get_result(column_name, result, 0)
 
         # Interim values can get added to record here
         interims = [
@@ -76,6 +72,7 @@ class QualitativeParser(InstrumentCSVResultsFileParser):
             ('File', 54),
             ('End', 55),
             ('mz', 67),
+            ('mzProd', 68),
             ('ReturnTime', 69),
             ('Start', 71),
             ('Width', 72),

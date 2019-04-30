@@ -8,8 +8,6 @@ from .base import SimpleTestCase
 
 # instruments that record a single AS in the result file
 SINGLE_AS_INSTRUMENTS = [
-    'agilent.masshunter.quantitative',
-    'agilent.masshunter.qualitative',
 ]
 # instruments that record a multiple ASs in the result file
 MULTI_AS_INSTRUMENTS = [
@@ -17,12 +15,10 @@ MULTI_AS_INSTRUMENTS = [
 ]
 # instruments that record multiple ASs in the result file
 NO_AS_INSTRUMENTS = [
-    'agilent.masshunter.aorc',
+    # 'agilent.masshunter.aorc',
+    # 'agilent.masshunter.quantitative',
+    # 'agilent.masshunter.qualitative',
 ]
-# list of all instruments in this add on
-ALL_INSTRUMENTS = \
-    SINGLE_AS_INSTRUMENTS + MULTI_AS_INSTRUMENTS + NO_AS_INSTRUMENTS
-
 # instruments that record interim fields in the result file
 INTERIM_INSTRUMENTS = {
     'agilent.masshunter.aorc': {
@@ -48,8 +44,63 @@ INTERIM_INSTRUMENTS = {
         ],
         'formula': '((([Ion1SigNseRat] > 100) or ([Ion2SigNseRat] > 1000) ) and "PASS" or "FAIL" )',
         'result': 'PASS',
+    },
+    'agilent.masshunter.qualitative': {
+        'as_title':  'Total Interims',
+        'as_keyword':  'TotalInterims',
+        'interims': [
+            {
+                'keyword': 'mz',
+                'title': 'mz',
+                'value': 0,
+                'type': 'int',
+                'hidden': False,
+                'unit': ''
+            },
+            {
+                'keyword': 'mzProd',
+                'title': 'mzProd',
+                'value': 0,
+                'type': 'int',
+                'hidden': False,
+                'unit': ''
+            },
+        ],
+        'formula': '((([mz]  == [mzProd]) ) and "PASS" or "FAIL" )',
+        'result': 'PASS',
+    },
+    'agilent.masshunter.quantitative': {
+        'as_title':  'Total Interims',
+        'as_keyword':  'TotalInterims',
+        'interims': [
+            {
+                'keyword': 'CalcConc',
+                'title': 'CalcConc',
+                'value': 0,
+                'type': 'int',
+                'hidden': False,
+                'unit': ''
+            },
+            {
+                'keyword': 'FinalConc',
+                'title': 'FinalConc',
+                'value': 0,
+                'type': 'int',
+                'hidden': False,
+                'unit': ''
+            },
+        ],
+        'formula': '((([CalcConc]  == [FinalConc]) ) and "PASS" or "FAIL" )',
+        'result': 'PASS',
     }
 }
+
+# list of all instruments in this add on
+ALL_INSTRUMENTS = \
+    SINGLE_AS_INSTRUMENTS + \
+    MULTI_AS_INSTRUMENTS + \
+    NO_AS_INSTRUMENTS + \
+    INTERIM_INSTRUMENTS.keys()
 
 
 class TestSetup(SimpleTestCase):
