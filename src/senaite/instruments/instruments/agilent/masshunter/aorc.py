@@ -63,8 +63,10 @@ class AORCParser(InstrumentXLSResultsFileParser):
 
         if splitted[0].startswith('ion'):
             ion_number = splitted[0].split(' ')[1]
+            mz_values = splitted[1].split('---')
             self._ions.append({
-                'Ion{}mz'.format(ion_number): splitted[1],
+                'Ion{}mzmax'.format(ion_number): mz_values[0],
+                'Ion{}mzmin'.format(ion_number): mz_values[1],
                 'Ion{}Area'.format(ion_number): splitted[2],
                 'Ion{}AreaRef'.format(ion_number): splitted[3],
                 'Ion{}SigNseRat'.format(ion_number): splitted[4],
