@@ -113,35 +113,9 @@ class AORCParser(InstrumentXLSResultsFileParser):
         return
 
 
-class AORCImporter(AnalysisResultsImporter):
-    """ Importer
-    """
-
-    # def _process_analysis(self, objid, analysis, values):
-    #     ret = AnalysisResultsImporter._process_analysis(
-    #         self, objid, analysis, values)
-    #     if values.get('Value') and str(values['Value'])[0] in "<>":
-    #         analysis.setDetectionLimitOperand('<')
-    #     return ret
-
-
-def __init__(self, parser, context,  override,
-             allowed_ar_states=None, allowed_analysis_states=None,
-             instrument_uid=None):
-
-        AnalysisResultsImporter.__init__(
-            self,
-            parser,
-            context,
-            override=override,
-            allowed_ar_states=allowed_ar_states,
-            allowed_analysis_states=allowed_analysis_states,
-            instrument_uid=instrument_uid)
-
-
 class aorcimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Agilent Masshunter AORC"
+    title = "Quanti AORC"
 
     def __init__(self, context):
         self.context = context
@@ -186,7 +160,7 @@ class aorcimport(object):
             elif override == 'overrideempty':
                 over = [True, True]
 
-            importer = AORCImporter(
+            importer = AnalysisResultsImporter(
                 parser=parser,
                 context=context,
                 allowed_ar_states=status,

@@ -181,32 +181,6 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
         return
 
 
-class ChemStationImporter(AnalysisResultsImporter):
-    """ Importer
-    """
-
-    # def _process_analysis(self, objid, analysis, values):
-    #     ret = AnalysisResultsImporter._process_analysis(
-    #         self, objid, analysis, values)
-    #     if values.get('Value') and str(values['Value'])[0] in "<>":
-    #         analysis.setDetectionLimitOperand('<')
-    #     return ret
-
-
-def __init__(self, parser, context,  override,
-             allowed_ar_states=None, allowed_analysis_states=None,
-             instrument_uid=None):
-
-        AnalysisResultsImporter.__init__(
-            self,
-            parser,
-            context,
-            override=override,
-            allowed_ar_states=allowed_ar_states,
-            allowed_analysis_states=allowed_analysis_states,
-            instrument_uid=instrument_uid)
-
-
 class chemstationimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "Agilent ChemStation"
@@ -254,7 +228,7 @@ class chemstationimport(object):
             elif override == 'overrideempty':
                 over = [True, True]
 
-            importer = ChemStationImporter(
+            importer = AnalysisResultsImporter(
                 parser=parser,
                 context=context,
                 allowed_ar_states=status,
