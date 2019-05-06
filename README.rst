@@ -14,6 +14,9 @@
 Introduction
 ============
 
+WARNING: This addon is not yet production ready and has not been released on PYPI
+
+
 SENAITE INSTRUMENTS adds **instrument results import and export** capabilities to `SENAITE LIMS <https://www.senaite.com>`_.
 
 
