@@ -22,7 +22,7 @@ class QuantitativeParser(InstrumentCSVResultsFileParser):
     """
 
     def __init__(self, infile, encoding=None):
-        InstrumentCSVResultsFileParser.__init__(self, infile, 'CSV')
+        InstrumentCSVResultsFileParser.__init__(self, infile)
         self._end_header = False
         self._delimiter = ','
         self._kw = None
@@ -144,8 +144,6 @@ class quantitativeimport(object):
         """ Import Form
         """
         infile = request.form['instrument_results_file']
-        fileformat = request.form.get(
-            'instrument_results_file_format', 'csv')
         artoapply = request.form['artoapply']
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
@@ -153,48 +151,52 @@ class quantitativeimport(object):
         logs = []
         warns = []
 
-        # Load the most suitable parser according to file extension/options/etc...
-        parser = None
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
-        if fileformat in ('csv'):
-            parser = QuantitativeParser(infile)
-        else:
-            errors.append(t(_("Unrecognized file format ${fileformat}",
-                              mapping={"fileformat": fileformat})))
+            results = {'errors': errors, 'log': logs, 'warns': warns}
+            return json.dumps(results)
 
-        if parser:
-            # Load the importer
+        file_formats = ['csv', ]
+        if infile.filename.split('.')[-1].lower() not in file_formats:
+            errors.append(t(_("Input file format must be ${file_formats}",
+                              mapping={"file_formats": file_formats[0]})))
+            results = {'errors': errors, 'log': logs, 'warns': warns}
+            return json.dumps(results)
+
+        # Load the most suitable parser according to file extension/options/etc...
+        parser = QuantitativeParser(infile)
+
+        # Load the importer
+        status = ['sample_received', 'attachment_due', 'to_be_verified']
+        if artoapply == 'received':
+            status = ['sample_received']
+        elif artoapply == 'received_tobeverified':
             status = ['sample_received', 'attachment_due', 'to_be_verified']
-            if artoapply == 'received':
-                status = ['sample_received']
-            elif artoapply == 'received_tobeverified':
-                status = ['sample_received', 'attachment_due', 'to_be_verified']
 
+        over = [False, False]
+        if override == 'nooverride':
             over = [False, False]
-            if override == 'nooverride':
-                over = [False, False]
-            elif override == 'override':
-                over = [True, False]
-            elif override == 'overrideempty':
-                over = [True, True]
+        elif override == 'override':
+            over = [True, False]
+        elif override == 'overrideempty':
+            over = [True, True]
 
-            importer = QuantitativeImporter(
-                parser=parser,
-                context=context,
-                allowed_ar_states=status,
-                allowed_analysis_states=None,
-                override=over,
-                instrument_uid=instrument)
-            tbex = ''
-            try:
-                importer.process()
-                errors = importer.errors
-                logs = importer.logs
-                warns = importer.warns
-            except Exception as e:
-                tbex = traceback.format_exc()
-                errors.append(tbex)
+        importer = QuantitativeImporter(
+            parser=parser,
+            context=context,
+            allowed_ar_states=status,
+            allowed_analysis_states=None,
+            override=over,
+            instrument_uid=instrument)
+        tbex = ''
+        try:
+            importer.process()
+            errors = importer.errors
+            logs = importer.logs
+            warns = importer.warns
+        except Exception as e:
+            tbex = traceback.format_exc()
+            errors.append(tbex)
 
         results = {'errors': errors, 'log': logs, 'warns': warns}
 
