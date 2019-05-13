@@ -127,10 +127,11 @@ class qualitativeimport(object):
         logs = []
         warns = []
 
-        # Load the most suitable parser according to file extension/options/etc...
-        parser = None
         if not hasattr(infile, 'filename'):
             errors.append(_("No file selected"))
+            results = {'errors': errors, 'log': logs, 'warns': warns}
+            return json.dumps(results)
+
         file_formats = ['csv', ]
         if infile.filename.split('.')[-1].lower() not in file_formats:
             errors.append(t(_("Input file format must be ${file_formats}",
@@ -138,6 +139,7 @@ class qualitativeimport(object):
             results = {'errors': errors, 'log': logs, 'warns': warns}
             return json.dumps(results)
 
+        # Load the most suitable parser according to file extension/options/etc...
         parser = QualitativeParser(infile)
         # Load the importer
         status = ['sample_received', 'attachment_due', 'to_be_verified']
