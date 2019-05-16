@@ -10,6 +10,7 @@ from bika.lims.exportimport.instruments.instrument import format_keyword
 from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.exportimport.instruments.resultsimport import InstrumentCSVResultsFileParser
 from bika.lims.utils import t
+from DateTime import DateTime
 from plone.i18n.normalizer.interfaces import IIDNormalizer
 from senaite.core.supermodel.interfaces import ISuperModel
 from zope.component import getAdapter
@@ -213,16 +214,10 @@ class quantitativeexport(object):
 
     def Export(self, context, request):
         tray = 1
-        instrument = context.getInstrument()
         norm = getUtility(IIDNormalizer).normalize
         filename = '{}-{}.xml'.format(
-            context.getId(), norm(instrument.getDataInterface()))
-        options = {
-            'dilute_factor': 1,
-            'method': 'F SO2 & T SO2'
-        }
-        for k, v in instrument.getDataInterfaceOptions():
-            options[k] = v
+            context.getId(), norm(self.title))
+        now = str(DateTime())[:16]
 
         root = ET.Element('SequenceTableDataSet')
         root.set('SchemaVersion', "1.0")
@@ -236,14 +231,16 @@ class quantitativeexport(object):
         root.set('SequenceReProcessing', "False")
         root.set('SequenceInjectBarCodeMismatch', "OnBarcodeMismatchInjectAnyway")
         root.set('SequenceOverwriteExistingData', "False")
-        root.set('SequenceModifiedTimeStamp', "Wed Mar 06 16:11:49 2019")
+        root.set('SequenceModifiedTimeStamp', now)
         root.set('SequenceFileECMPath', "")
 
         # for looking up "cup" number (= slot) of ARs
         parent_to_slot = {}
         layout = context.getLayout()
         for item in layout:
-            p_uid = item['parent_uid']
+            p_uid = item.get('parent_uid')
+            if not p_uid:
+                p_uid = item.get('container_uid')
             if p_uid not in parent_to_slot.keys():
                 parent_to_slot[p_uid] = int(item['position'])
 
@@ -251,7 +248,11 @@ class quantitativeexport(object):
         sequences = []
         for item in layout:
             # create batch header row
-            p_uid = item['parent_uid']
+            p_uid = item.get('parent_uid')
+            if not p_uid:
+                p_uid = item.get('container_uid')
+            if not p_uid:
+                continue
             if p_uid in sequences:
                 continue
             sequences.append(p_uid)
@@ -264,18 +265,19 @@ class quantitativeexport(object):
             })
         rows.sort(lambda a, b: cmp(a['cup'], b['cup']))
 
+        cnt = 0
         for row in rows:
             seq = ET.SubElement(root, 'Sequence')
             ET.SubElement(seq, 'SequenceID').text = str(row['tray'])
-            ET.SubElement(seq, 'SampleID').text = row['sample'].getId()
-            # ET.SubElement(seq, 'AcqMethodFileName').text = AAS_SCR_MRM 2015.m
-            # ET.SubElement(seq, 'AcqMethodPathName').text = D:\MassHunter\GCMS\2\methods\methods
-            # ET.SubElement(seq, 'DataFileName').text = 9HEPT0603-01
-            # ET.SubElement(seq, 'DataPathName').text = D:\MassHunter\GCMS\1\data
+            ET.SubElement(seq, 'SampleID').text = str(cnt)
+            ET.SubElement(seq, 'AcqMethodFileName').text = 'Dunno'
+            ET.SubElement(seq, 'AcqMethodPathName').text = 'Dunno'
             ET.SubElement(seq, 'DataFileName').text = row['sample'].Title()
+            ET.SubElement(seq, 'DataPathName').text = 'Dunno'
             ET.SubElement(seq, 'SampleName').text = row['sample'].Title()
             ET.SubElement(seq, 'SampleType').text = row['sample'].SampleType.Title()
             ET.SubElement(seq, 'Vial').text = str(row['cup'])
+            cnt += 1
 
         xml = ET.tostring(root, method='xml')
         # stream file to browser
@@ -284,4 +286,5 @@ class quantitativeexport(object):
         setheader('Content-Disposition',
                   'attachment; filename="%s"' % filename)
         setheader('Content-Type', 'text/xml')
+        request.RESPONSE.write(xml)
         request.RESPONSE.write(xml)
