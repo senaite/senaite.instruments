@@ -18,8 +18,10 @@ Needed imports::
     >>> from bika.lims.utils.analysisrequest import create_analysisrequest
     >>> from DateTime import DateTime
 
+    >>> from senaite.core.supermodel.interfaces import ISuperModel
     >>> from senaite.instruments import instruments
     >>> from senaite.instruments.tests import test_setup
+    >>> from zope.component import getAdapter
     >>> from zope.publisher.browser import FileUpload, TestRequest
 
 Functional helpers::
@@ -45,6 +47,7 @@ Variables::
     >>> bika_analysiscategories = bika_setup.bika_analysiscategories
     >>> bika_analysisservices = bika_setup.bika_analysisservices
     >>> bika_calculations = bika_setup.bika_calculations
+    >>> bika_methods = portal.methods
 
 We need certain permissions to create and access objects used in this test,
 so here we will assume the role of Lab Manager::
@@ -144,9 +147,14 @@ This service matches the service specified in the file from which the import wil
 
     >>> total_calc = api.create(bika_calculations, 'Calculation', title='TotalMagCal')
     >>> total_calc.setFormula('[Mg] + [Ca]')
+
+    >>> a_method = api.create(bika_methods, 'Method', title='A Method')
+    >>> a_method.setCalculation(total_calc)
+
     >>> analysisservice4 = api.create(bika_analysisservices, 'AnalysisService', title='THCaCO3', Keyword="THCaCO3")
     >>> analysisservice4.setUseDefaultCalculation(False)
     >>> analysisservice4.setCalculation(total_calc)
+    >>> analysisservice4.setMethod(a_method)
     >>> analysisservice4
     <AnalysisService at /plone/bika_setup/bika_analysisservices/analysisservice-4>
 
@@ -251,6 +259,12 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...
     ...     for an in analyses:
+    ...         analysis = getAdapter(an.UID(), ISuperModel)
+    ...         if analysis.Keyword == 'THCaCO3':
+    ...             if not analysis.Method:
+    ...                 self.fail("No Method on Analysis for {}".format(inter[0]))
+    ...             elif analysis.Method.Title() != 'A Method':
+    ...                 self.fail("Incorrect Method on Analysis for {}".format(inter[0]))
     ...         if inter[0] in test_setup.SINGLE_AS_INSTRUMENTS + test_setup.MULTI_AS_INSTRUMENTS and \
     ...            an.getKeyword() == 'Ca':
     ...             if an.getResult() != '3.0':
