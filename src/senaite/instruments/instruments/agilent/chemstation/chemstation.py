@@ -19,7 +19,7 @@ from zope.interface import implements
 
 class chemstationexport(object):
     implements(IInstrumentExportInterface)
-    title = "ChemStationExporter"
+    title = "Agilent ChemStation Exporter"
 
     def __init__(self, context):
         self.context = context
@@ -132,17 +132,17 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
             self._header = splitted
             return 0
 
-        # DefaultResult
-        value_column = 'Amount'
+        # No default
         record = {
-            'DefaultResult': value_column,
+            'DefaultResult': None,
             'Remarks': ''
         }
+        # 4 Interim fields
+        value_column = 'Amount'
         result = splitted[4]
         result = self.get_result(value_column, result, 0)
         record[value_column] = result
 
-        # 3 Interim fields
         value_column = 'ReturnTime'
         result = splitted[2]
         result = self.get_result(value_column, result, 0)

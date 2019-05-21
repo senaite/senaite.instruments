@@ -191,7 +191,8 @@ Extend `AnalysisService` with test config data::
     ...     interim_calc = api.create(bika_calculations, 'Calculation', title='{}-Calc'.format(as_data['as_title']))
     ...     interim_calc.setInterimFields(interims)
     ...     self.assertEqual(interim_calc.getInterimFields(), interims)
-    ...     interim_calc.setFormula(as_data['formula'])
+    ...     if as_data.get('formula'):
+    ...         interim_calc.setFormula(as_data['formula'])
     ...     new_as = api.create(bika_analysisservices, 'AnalysisService', title=as_data['as_title'], Keyword=as_data['as_keyword'])
     ...     new_as.setUseDefaultCalculation(False)
     ...     new_as.setCalculation(interim_calc)
@@ -252,7 +253,7 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...     #TODO: Test for interim fields on other files aswell
     ...     analyses = ar.getAnalyses(full_objects=True)
     ...     if inter[0] in test_setup.MULTI_AS_INSTRUMENTS and \
-    ...        'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
+    ...         'Import finished successfully: 1 Samples and 2 results updated' not in test_results['log']:
     ...         self.fail("Results Update failed for {}".format(inter[0]))
     ...     if inter[0] in test_setup.SINGLE_AS_INSTRUMENTS and \
     ...        'Import finished successfully: 1 Samples and 1 results updated' not in test_results['log']:
@@ -286,17 +287,25 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...         if inter[0] in test_setup.INTERIM_INSTRUMENTS and \
     ...            an.getKeyword() == as_data['as_keyword']:
     ...             if an.getResult() != as_data['result']:
-    ...                 msg = "Result {} = {}, not {}".format(
-    ...                     an.getKeyword(), an.getResult(), as_data['result'])
+    ...                 msg = "{}: Result {} = {}, not {}".format(
+    ...                     inter[0], an.getKeyword(), an.getResult(), as_data['result'])
     ...                 self.fail(msg)
-    ...              # an_interims = an.getInterimFields()
-    ...              # test_interims = as_data['interims']
-    ...              # for an_interim in an_interims:
-    ...              #     if as_interim.get('keyword') == 'pest1' and \
-    ...              #        interim.get('value') != 3:
-    ...              #         msg = "Interim result {} = {}, not 3".format(
-    ...              #             interim.get('keyword'), interim.get('value'))
-    ...              #         self.fail(msg)
+    ...             an_interims = an.getInterimFields()
+    ...             test_interims = as_data.get('interims', [])
+    ...             if test_interims and an_interims:
+    ...                 for an_interim in an_interims:
+    ...                     an_kw = an_interim.get('keyword')
+    ...                     test_an = filter(lambda x: x['keyword'] == an_kw, test_interims)
+    ...                     if len(test_an) == 0:
+    ...                         continue
+    ...                     test_an = test_an[0]
+    ...                     if an_interim.get('value') != test_an.get('value', None):
+    ...                         msg = "{}: Interim result {} = {}, not {}".format(
+    ...                             inter[0],
+    ...                             an_interim.get('keyword'),
+    ...                             an_interim.get('value'),
+    ...                             test_an.get('value'))
+    ...                         self.fail(msg)
     ...
     ...     if 'port' in globals():
     ...         del Import

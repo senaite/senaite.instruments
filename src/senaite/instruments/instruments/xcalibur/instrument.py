@@ -23,7 +23,7 @@ from zope.interface import implements
 
 class xcaliburexport(object):
     implements(IInstrumentExportInterface)
-    title = "XCaliburExporter"
+    title = "XCalibur Exporter"
 
     def __init__(self, context):
         self.context = context
@@ -96,7 +96,7 @@ class xcaliburexport(object):
 
 class xcaliburimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "XCaliburImporter"
+    title = "XCalibur"
 
     def __init__(self, context):
         self.context = context

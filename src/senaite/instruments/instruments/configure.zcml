@@ -24,6 +24,13 @@
 
    <adapter
     for="*"
+    name="masshunter_qualitative_exporter"
+    factory=".agilent.masshunter.qualitative.qualitativeexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+
+
+   <adapter
+    for="*"
     name="masshunter_quantitative_importer"
     factory=".agilent.masshunter.quantitative.quantitativeimport"
     provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
