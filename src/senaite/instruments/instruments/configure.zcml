@@ -61,4 +61,16 @@
     provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
 ... incomplete -->
 
+   <adapter
+    for="*"
+    name="maldi_biotyper_importer"
+    factory=".maldibiotyper.maldibiotyper.maldibiotyperimport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="maldi_biotyper_exporter"
+    factory=".maldibiotyper.maldibiotyper.maldibiotyperexport"
+    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+
 </configure>
