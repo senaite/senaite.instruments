@@ -13,15 +13,11 @@ SINGLE_AS_INSTRUMENTS = [
 MULTI_AS_INSTRUMENTS = [
     # 'agilent.chemstation.chemstation',
 ]
-# instruments that record multiple ASs in the result file
-NO_AS_INSTRUMENTS = [
-    'agilent.chemstation.chemstation',
-]
 # instruments that record interim fields in the result file
 INTERIM_INSTRUMENTS = {
     'agilent.masshunter.aorc': {
-        'as_title':  'Test Interims',
-        'as_keyword':  'TestInterims',
+        'as_title':  'Test Interims AMA',
+        'as_keyword':  'TestInterimsAMA',
         'interims': [
             {
                 'keyword': 'Ion1SigNseRat',
@@ -43,8 +39,8 @@ INTERIM_INSTRUMENTS = {
         'result': '',
     },
     'agilent.masshunter.qualitative': {
-        'as_title':  'Test Interims',
-        'as_keyword':  'TestInterims',
+        'as_title':  'Test InterimsAMQL',
+        'as_keyword':  'TestInterimsAMQL',
         'interims': [
             {
                 'keyword': 'mz',
@@ -66,8 +62,8 @@ INTERIM_INSTRUMENTS = {
         'result': '',
     },
     'agilent.masshunter.quantitative': {
-        'as_title':  'Test Interims',
-        'as_keyword':  'TestInterims',
+        'as_title':  'Test Interims AMQT',
+        'as_keyword':  'TestInterimsAMQT',
         'interims': [
             {
                 'keyword': 'CalcConc',
@@ -89,8 +85,8 @@ INTERIM_INSTRUMENTS = {
         'result': '',
     },
     'agilent.chemstation.chemstation': {
-        'as_title':  'Calcium',
-        'as_keyword':  'Ca',
+        'as_title':  'Gold',
+        'as_keyword':  'Au',
         'interims': [
             {
                 'keyword': 'Area',
@@ -117,7 +113,6 @@ INTERIM_INSTRUMENTS = {
 ALL_INSTRUMENTS = \
     SINGLE_AS_INSTRUMENTS + \
     MULTI_AS_INSTRUMENTS + \
-    NO_AS_INSTRUMENTS + \
     INTERIM_INSTRUMENTS.keys()
 
 
