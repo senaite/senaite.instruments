@@ -90,7 +90,7 @@ class PEDeltaLactorScopeParser(InstrumentXLSResultsFileParser):
         return
 
 
-class pedeltalactorscopeimport(object):
+class pedeltalactoscopeimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "PE Delta LactoScope"
 

@@ -1,6 +1,7 @@
 import types
 from bika.lims.exportimport.instruments.resultsimport import InstrumentResultsFileParser
 from cStringIO import StringIO
+from openpyxl import load_workbook
 from xlrd import open_workbook
 from zope.publisher.browser import FileUpload
 
