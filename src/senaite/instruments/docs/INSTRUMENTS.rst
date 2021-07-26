@@ -18,7 +18,7 @@ Needed imports::
     >>> from bika.lims.utils.analysisrequest import create_analysisrequest
     >>> from DateTime import DateTime
 
-    >>> from senaite.core.supermodel.interfaces import ISuperModel
+    >>> from senaite.app.supermodel.interfaces import ISuperModel
     >>> from senaite.instruments import instruments
     >>> from senaite.instruments.tests import test_setup
     >>> from zope.component import getAdapter
@@ -83,8 +83,6 @@ Where testing files live::
     ...         if os.path.isfile(os.path.join(instruments_path, inst_path)):
     ...             interfaces.append(fl)
     ...             importer_filename.append((fl, fl))
-    ...         else:
-    ...             self.fail('File {} found does match any import interface'.format(fl))
 
 Availability of instrument interface
 ------------------------------------
@@ -228,8 +226,10 @@ Create an `Instrument` and assign to it the tested Import Interface::
     ...     title = inter.split('.')[0].title()
     ...     instrument = api.create(bika_instruments, "Instrument", title=title)
     ...     importer_class = 'senaite.instruments.instruments.{}.{}import'.format(inter, inter.split('.')[-1])
-    ...     instrument.setImportDataInterface([importer_class])
-    ...     if instrument.getImportDataInterface() != [importer_class]:
+    ...     newval = [importer_class]
+    ...     instrument.Schema().getField('ImportDataInterface').set(instrument, newval)
+    ...     di = instrument.Schema().getField('ImportDataInterface').get(instrument)
+    ...     if instrument.getImportDataInterface() != newval:
     ...         self.fail('Instrument Import Data Interface did not get set')
     
     >>> for inter in importer_filename:
