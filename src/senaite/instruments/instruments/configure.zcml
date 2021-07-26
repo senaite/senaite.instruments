@@ -6,59 +6,71 @@
     for="*"
     name="chemstation_importer"
     factory=".agilent.chemstation.chemstation.chemstationimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
 <!-- Incomplete ...
    <adapter
     for="*"
     name="chemstation_exporter"
     factory=".agilent.chemstation.chemstation.chemstationexport"
-    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentExportInterface"/>
 ... incomplete -->
 
    <adapter
     for="*"
     name="masshunter_qualitative_importer"
     factory=".agilent.masshunter.qualitative.qualitativeimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
    <adapter
     for="*"
     name="masshunter_qualitative_exporter"
     factory=".agilent.masshunter.qualitative.qualitativeexport"
-    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentExportInterface"/>
 
 
    <adapter
     for="*"
     name="masshunter_quantitative_importer"
     factory=".agilent.masshunter.quantitative.quantitativeimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
    <adapter
     for="*"
     name="masshunter_quantitative_exporter"
     factory=".agilent.masshunter.quantitative.quantitativeexport"
-    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentExportInterface"/>
 
    <adapter
     for="*"
     name="masshunter_aorc_importer"
     factory=".agilent.masshunter.aorc.aorcimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
 <!-- Incomplete ...
    <adapter
     for="*"
     name="xcalibur_importer"
     factory=".xcalibur.instrument.xcaliburimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
    <adapter
     for="*"
     name="xcalibur_exporter"
     factory=".xcalibur.instrument.xcaliburexport"
-    provides="bika.lims.exportimport.instruments.IInstrumentExportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentExportInterface"/>
 ... incomplete -->
+
+   <adapter
+    for="*"
+    name="s8tiger_importer"
+    factory=".bruker.s8tiger.s8tiger.importer"
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
+
+   <adapter
+    for="*"
+    name="pe900h8300_importer"
+    factory=".perkinelmer.pe900h8300.pe900h8300.importer"
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
 </configure>

@@ -3,11 +3,11 @@ import json
 import traceback
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
-from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
-from bika.lims.exportimport.instruments import IInstrumentExportInterface
-from bika.lims.exportimport.instruments import IInstrumentImportInterface
-from bika.lims.exportimport.instruments.instrument import format_keyword
-from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
+from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
+from senaite.core.exportimport.instruments import IInstrumentExportInterface
+from senaite.core.exportimport.instruments import IInstrumentImportInterface
+from senaite.core.exportimport.instruments.instrument import format_keyword
+from senaite.core.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.utils import t
 from cStringIO import StringIO
 from DateTime import DateTime

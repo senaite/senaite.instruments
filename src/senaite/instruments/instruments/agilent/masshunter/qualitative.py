@@ -3,16 +3,16 @@ import traceback
 import xml.etree.cElementTree as ET
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
-from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
-from bika.lims.exportimport.instruments import IInstrumentExportInterface
-from bika.lims.exportimport.instruments import IInstrumentImportInterface
-from bika.lims.exportimport.instruments.instrument import format_keyword
-from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
-from bika.lims.exportimport.instruments.resultsimport import InstrumentCSVResultsFileParser
+from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
+from senaite.core.exportimport.instruments import IInstrumentExportInterface
+from senaite.core.exportimport.instruments import IInstrumentImportInterface
+from senaite.core.exportimport.instruments.instrument import format_keyword
+from senaite.core.exportimport.instruments.resultsimport import AnalysisResultsImporter
+from senaite.core.exportimport.instruments.resultsimport import InstrumentCSVResultsFileParser
 from bika.lims.utils import t
 from DateTime import DateTime
 from plone.i18n.normalizer.interfaces import IIDNormalizer
-from senaite.core.supermodel.interfaces import ISuperModel
+from senaite.app.supermodel.interfaces import ISuperModel
 from zope.component import getAdapter
 from zope.component import getUtility
 from zope.interface import implements

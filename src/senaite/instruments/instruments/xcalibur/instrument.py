@@ -6,15 +6,15 @@ from cStringIO import StringIO
 from DateTime import DateTime
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
-from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
-from bika.lims.exportimport.instruments import IInstrumentExportInterface
-from bika.lims.exportimport.instruments import IInstrumentImportInterface
-from bika.lims.exportimport.instruments.utils import \
+from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
+from senaite.core.exportimport.instruments import IInstrumentExportInterface
+from senaite.core.exportimport.instruments import IInstrumentImportInterface
+from senaite.core.exportimport.instruments.utils import \
     get_instrument_import_ar_allowed_states
-from bika.lims.exportimport.instruments.utils import \
+from senaite.core.exportimport.instruments.utils import \
     get_instrument_import_override
-from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
-from bika.lims.exportimport.instruments.resultsimport import \
+from senaite.core.exportimport.instruments.resultsimport import AnalysisResultsImporter
+from senaite.core.exportimport.instruments.resultsimport import \
     InstrumentCSVResultsFileParser
 from plone.i18n.normalizer.interfaces import IIDNormalizer
 from zope.component import getUtility

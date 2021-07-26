@@ -43,6 +43,7 @@ setup(
         "senaite.api",
         "senaite.core",
         "xlrd",
+        "openpyxl"
     ],
     extras_require={
         "test": [

@@ -15,7 +15,7 @@ from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import PloneSandboxLayer
 from plone.app.testing import FunctionalTesting
 
-from bika.lims.testing import BASE_TESTING
+from senaite.core.tests.layers import BASE_TESTING
 
 
 class SimpleTestLayer(PloneSandboxLayer):
