@@ -73,4 +73,10 @@
     factory=".perkinelmer.winlab32.winlab32.importer"
     provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
+   <adapter
+    for="*"
+    name="nexion350x_importer"
+    factory=".perkinelmer.nexion350x.nexion350x.importer"
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
+
 </configure>
