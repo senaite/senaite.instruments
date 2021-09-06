@@ -23,19 +23,19 @@ from bika.lims import api
 from bika.lims.idserver import renameAfterCreation
 from bika.lims.utils import tmpID
 from bika.lims.utils.analysisrequest import create_analysisrequest
-from senaite.instruments.instruments.perkinelmer.pe900h8300.pe900h8300 import \
+from senaite.instruments.instruments.perkinelmer.winlab32.winlab32 import \
     importer
 from zope.event import notify
 from zope.publisher.browser import FileUpload
 from zope.publisher.browser import TestRequest
 
-TITLE = "Perkin Elmer 900H or 8300"
+TITLE = "Perkin Elmer Winlab32"
 
 IFACE = ("senaite.instruments.instruments"
-         ".perkinelmer.pe900h8300.pe900h8300.importer")
+         ".perkinelmer.winlab32.winlab32.importer")
 
 path = join(abspath(dirname(__file__)), 'files', 'instruments', 'perkinelmer')
-FN = join(path, 'PinAAcle900HOptima8300.csv')
+FN = join(path, 'winlab32.csv')
 
 interims = [
     dict(keyword="concentration", title="Concentration", hidden=False)
@@ -49,10 +49,10 @@ class TestFile(object):
         self.filename = filename
 
 
-class TestPE900H8300(DataTestCase):
+class TestWinlab32(DataTestCase):
 
     def setUp(self):
-        super(TestPE900H8300, self).setUp()
+        super(TestWinlab32, self).setUp()
         setRoles(self.portal, TEST_USER_ID, ['Member', 'LabManager'])
         login(self.portal, TEST_USER_NAME)
         # instrument
@@ -162,5 +162,5 @@ def add_analysisservice(context, calculation=None):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestPE900H8300))
+    suite.addTest(unittest.makeSuite(TestWinlab32))
     return suite

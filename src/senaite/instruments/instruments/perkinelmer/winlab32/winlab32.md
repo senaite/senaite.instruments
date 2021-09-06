@@ -1,4 +1,7 @@
-Perkin Elmer PinAAcle 900H and Optima 8300
+Perkin Elmer Winlab32
+
+Written for PinAAcle 900H and Optima 8300, it may need some refactoring for other
+instruments and configurations than those tested.
 
 The file can be XLS, XLSX, or CSV.
 
