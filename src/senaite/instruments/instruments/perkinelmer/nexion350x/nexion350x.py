@@ -57,7 +57,7 @@ class AnalysisNotFound(Exception):
     pass
 
 
-class PE900H8300(InstrumentResultsFileParser):
+class Nexion350x(InstrumentResultsFileParser):
     ar = None
 
     def __init__(self, infile, encoding=None, delimiter=None):
@@ -163,7 +163,7 @@ class PE900H8300(InstrumentResultsFileParser):
 
 class importer(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Perkin Elmer PinAAcle 900H and Optima 8300"
+    title = "Perkin Elmer Nexion 350X"
 
     def __init__(self, context):
         self.context = context
@@ -183,7 +183,7 @@ class importer(object):
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
 
-        parser = PE900H8300(infile)
+        parser = Nexion350x(infile)
         if parser:
 
             status = ['sample_received', 'attachment_due', 'to_be_verified']

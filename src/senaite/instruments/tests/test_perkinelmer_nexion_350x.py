@@ -30,7 +30,7 @@ from zope.publisher.browser import FileUpload
 from zope.publisher.browser import TestRequest
 
 IFACE = ("senaite.instruments.instruments"
-         ".perkinelmer.pe900h8300.pe900h8300.importer")
+         ".perkinelmer.nexion350x.nexion350x.importer")
 
 TITLE = "Perkin Elmer Nexion 350X"
 
