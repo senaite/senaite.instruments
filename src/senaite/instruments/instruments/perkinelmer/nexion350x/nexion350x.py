@@ -153,11 +153,11 @@ class Nexion350x(InstrumentResultsFileParser):
         analyses = self.get_analyses(ar)
         analyses = [v for k, v in analyses.items() if k.startswith(kw)]
         if len(analyses) < 1:
-            msg = "No analysis found matching Formula '${formula}'",
-            raise AnalysisNotFound(msg)
+            msg = "No analysis found matching Keyword '${kw}'",
+            raise AnalysisNotFound(msg, kw=kw)
         if len(analyses) > 1:
-            msg = "Multiple analyses found matching Formula '${formula}'",
-            raise MultipleAnalysesFound(msg)
+            msg = "Multiple analyses found matching Keyword '${kw}'",
+            raise MultipleAnalysesFound(msg, kw=kw)
         return analyses[0]
 
 

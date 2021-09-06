@@ -69,7 +69,7 @@
 
    <adapter
     for="*"
-    name="pe900h8300_importer"
+    name="winlab32"
     factory=".perkinelmer.winlab32.winlab32.importer"
     provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 

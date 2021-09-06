@@ -81,7 +81,7 @@ class S8TigerParser(InstrumentResultsFileParser):
         self.csv_data = None
         self.csv_data = None
         self.sample_id = None
-        mimetype=guess_type(self.infile.filename)
+        mimetype = guess_type(self.infile.filename)
         InstrumentResultsFileParser.__init__(self, infile, mimetype)
 
     def parse(self):
@@ -100,7 +100,7 @@ class S8TigerParser(InstrumentResultsFileParser):
                         worksheet=self.worksheet,
                         delimiter=self.delimiter)
                     break
-                except Exception as e: # noqa
+                except Exception as e:  # noqa
                     pass
             else:
                 self.warn("Can't parse input file as XLS, XLSX, or CSV.")
@@ -192,11 +192,11 @@ class S8TigerParser(InstrumentResultsFileParser):
     def get_analysis(self, f):
         analyses = [v for k, v in self.analyses.items() if k.startswith(f)]
         if len(analyses) < 1:
-            msg = "No analysis found matching Formula '${formula}'",
-            raise AnalysisNotFound(msg)
+            msg = "No analysis found matching Keyword '${kw}'",
+            raise AnalysisNotFound(msg, kw=f)
         if len(analyses) > 1:
-            msg = "Multiple analyses found matching Formula '${formula}'",
-            raise MultipleAnalysesFound(msg)
+            msg = "Multiple analyses found matching Keyword '${kw}'",
+            raise MultipleAnalysesFound(msg, kw=f)
         return analyses[0]
 
 
