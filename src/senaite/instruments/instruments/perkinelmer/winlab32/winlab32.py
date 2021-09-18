@@ -21,6 +21,8 @@ import csv
 import json
 import traceback
 from mimetypes import guess_type
+from os.path import abspath
+from os.path import splitext
 from re import subn
 
 from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
@@ -55,18 +57,18 @@ class Winlab32(InstrumentResultsFileParser):
         self.delimiter = delimiter if delimiter else ','
         self.infile = infile
         self.csv_data = None
-        self.csv_data = None
         self.sample_id = None
         mimetype = guess_type(self.infile.filename)
         InstrumentResultsFileParser.__init__(self, infile, mimetype)
 
     def parse(self):
         order = []
-        if '.xlsx' in self.infile.filename.lower():
+        ext = splitext(self.infile.filename.lower())[-1]
+        if ext == '.xlsx':
             order = (xlsx_to_csv, xls_to_csv)
-        elif '.xls' in self.infile.filename.lower():
+        elif ext == '.xls':
             order = (xls_to_csv, xlsx_to_csv)
-        elif '.csv' in self.infile.filename.lower():
+        elif ext == '.csv':
             self.csv_data = self.infile
         if order:
             for importer in order:
@@ -87,6 +89,7 @@ class Winlab32(InstrumentResultsFileParser):
         reader = csv.DictReader(lines)
         for row in reader:
             self.parse_row(reader.line_num, row)
+        return 0
 
     def parse_row(self, row_nr, row):
         # convert row to use interim field names
@@ -94,24 +97,24 @@ class Winlab32(InstrumentResultsFileParser):
             value = float(row['Reported Conc (Calib)'])
         except (TypeError, ValueError):
             value = row['Reported Conc (Calib)']
-        parsed = {'concentration': value, 'DefaultResult': 'concentration'}
+        parsed = {'reading': value, 'DefaultResult': 'reading'}
 
         sample_id = subn(r'[^\w\d\-_]*', '', row.get('Sample ID', ""))[0]
         kw = subn(r"[^\w\d]*", "", row.get('Analyte Name', ""))[0]
+        kw = kw.lower()
         if not sample_id or not kw:
             return 0
 
         try:
             ar = self.get_ar(sample_id)
             analysis = self.get_analysis(ar, kw)
-            keyword = analysis.getKeyword
         except Exception as e:
             self.warn(msg="Error getting analysis for '${s}/${kw}': ${e}",
                       mapping={'s': sample_id, 'kw': kw, 'e': repr(e)},
                       numline=row_nr, line=str(row))
             return
 
-        self._addRawResult(sample_id, {keyword: parsed})
+        self._addRawResult(sample_id, {kw: parsed})
         return 0
 
     @staticmethod
@@ -125,24 +128,26 @@ class Winlab32(InstrumentResultsFileParser):
 
     @staticmethod
     def get_analyses(ar):
-        analyses = ar.getAnalyses()
-        return dict((a.getKeyword, a) for a in analyses)
+        brains = ar.getAnalyses()
+        return dict((a.getKeyword, a) for a in brains)
 
     def get_analysis(self, ar, kw):
-        analyses = self.get_analyses(ar)
-        analyses = [v for k, v in analyses.items() if k.startswith(kw)]
-        if len(analyses) < 1:
+        kw = kw.lower()
+        brains = self.get_analyses(ar)
+        brains = [v for k, v in brains.items() if k.startswith(kw)]
+        if len(brains) < 1:
             msg = "No analysis found matching Keyword '${kw}'",
             raise AnalysisNotFound(msg, kw=kw)
-        if len(analyses) > 1:
-            msg = "Multiple analyses found matching Keyword '${kw}'",
+        if len(brains) > 1:
+            msg = "Multiple brains found matching Keyword '${kw}'",
             raise MultipleAnalysesFound(msg, kw=kw)
-        return analyses[0]
+        return brains[0]
 
 
 class importer(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "Perkin Elmer Winlab32"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context

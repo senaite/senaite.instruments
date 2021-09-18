@@ -1,6 +1,8 @@
 import csv
 import json
 import traceback
+from os.path import abspath
+
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
@@ -184,6 +186,7 @@ class ChemStationParser(InstrumentXLSResultsFileParser):
 class chemstationimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "Agilent ChemStation"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context

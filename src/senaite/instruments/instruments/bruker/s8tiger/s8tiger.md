@@ -16,6 +16,14 @@ The file must be XLS, XLSX, or CSV format, and it's columns are mapped to interi
     - Analyzed layer        analyzed_layer
     - Bound %               bound_pct
 
+Additional calculation interim fields are populated:
+
+    - 'reading_ppm': `concentration` in numeric form, represented as PPM
+    - 'reading_pct': `concentration` in numeric form, represented as a percentage.
+    - 'reading':  `concentration` value in units selected at import.
+
+If no calculation is selected, the `reading` value is used as the default result for the analysis.
+
 `Formula` column is used to discover the Analysis Service which should receive the values.
 
     - `Formula` column does not need to contain an exact match to the AnalysisService keyword.
@@ -27,10 +35,3 @@ The file must be XLS, XLSX, or CSV format, and it's columns are mapped to interi
 
 The remaining columns are written to their interim fields, if these fields exist.
 
-Additional calculation interim fields are populated:
-
-    - 'reading_ppm': `concentration` in numeric form, represented as PPM
-    - 'reading_pct': `concentration` in numeric form, represented as a percentage.
-    - 'reading':  `concentration` value in units selected at import.
-
-If no calculation is selected, the `reading` value is used as the default result for the analysis.

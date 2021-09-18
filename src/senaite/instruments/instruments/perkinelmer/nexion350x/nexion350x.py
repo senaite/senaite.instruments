@@ -21,6 +21,8 @@ import csv
 import json
 import traceback
 from mimetypes import guess_type
+from os.path import abspath
+from os.path import splitext
 from re import subn
 
 from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
@@ -40,12 +42,12 @@ from zope.interface import implements
 from zope.publisher.browser import FileUpload
 
 non_analyte_row_headers = [
-    "Sample Id",
-    "R",
-    "Acquisition Time",
-    "QC Status",
-    "Dataset File",
-    "Method File",
+    'Sample Id',
+    'R',
+    'Acquisition Time',
+    'QC Status',
+    'Dataset File',
+    'Method File',
 ]
 
 
@@ -57,14 +59,14 @@ class AnalysisNotFound(Exception):
     pass
 
 
-class Nexion350x(InstrumentResultsFileParser):
+class Nexion350xParser(InstrumentResultsFileParser):
     ar = None
 
-    def __init__(self, infile, encoding=None, delimiter=None):
+    def __init__(self, infile, worksheet=0, encoding=None, delimiter=None):
         self.delimiter = delimiter if delimiter else ','
         self.encoding = encoding
         self.infile = infile
-        self.csv_data = None
+        self.worksheet = worksheet
         self.csv_data = None
         self.sample_id = None
         mimetype = guess_type(self.infile.filename)
@@ -72,23 +74,25 @@ class Nexion350x(InstrumentResultsFileParser):
 
     def parse(self):
         order = []
-        if '.xlsx' in self.infile.filename.lower():
+        ext = splitext(self.infile.filename.lower())[-1]
+        if ext == '.xlsx':
             order = (xlsx_to_csv, xls_to_csv)
-        elif '.xls' in self.infile.filename.lower():
+        elif ext == '.xls':
             order = (xls_to_csv, xlsx_to_csv)
-        elif '.csv' in self.infile.filename.lower():
+        elif ext == '.csv':
             self.csv_data = self.infile
         if order:
             for importer in order:
                 try:
                     self.csv_data = importer(
                         infile=self.infile,
+                        worksheet=self.worksheet,
                         delimiter=self.delimiter)
                     break
                 except Exception as e:  # noqa
                     pass
             else:
-                self.warn("Can't parse input file as XLS, XLSX, or CSV.")
+                self.warn('Error parsing input as XLS, XLSX, or CSV.')
                 return -1
         stub = FileStub(file=self.csv_data, name=str(self.infile.filename))
         self.csv_data = FileUpload(stub)
@@ -97,47 +101,49 @@ class Nexion350x(InstrumentResultsFileParser):
         reader = csv.DictReader(lines)
         for row in reader:
             self.parse_row(reader.line_num, row)
+        return 0
 
     def parse_row(self, row_nr, row):
         if row['Sample Id'].lower().strip() in (
-                "sample id", "blk", "rblk", "calibration curves"):
+                '', 'sample id', 'blk', 'rblk', 'calibration curves'):
             return 0
 
         # Get sample for this row
-        sample_id = subn(r'[^\w\d\-_]*', '', row.get('Sample Id', ""))[0]
+        sample_id = subn(r'[^\w\d\-_]*', '', row.get('Sample Id', ''))[0]
         ar = self.get_ar(sample_id)
         if not ar:
-            msg = "Sample not found for {}".format(sample_id)
+            msg = 'Sample not found for {}'.format(sample_id)
             self.warn(msg, numline=row_nr, line=str(row))
             return 0
         # Get sample analyses
         analyses = self.get_analyses(ar)
-        __import__('pdb').set_trace()
         # Search for rows who's headers are analyte keys
-        for key in row.keys():
+        for Key in row.keys():
+            key = Key.lower()
             if key in non_analyte_row_headers:
                 continue
-            kw = subn(r"[^\w\d]*", "", key)[0]
+            kw = subn(r'[^\w\d]*', '', key)[0]
             if not kw:
-                return 0
+                continue
             try:
-                an = [a for a in analyses if a.getKeyword.startswith(kw)]
-                if not an:
-                    print(kw)
-                    msg = "Can't find analysis with keyword {}".format(kw)
-                    self.warn(msg, numline=row_nr, line=str(row))
-                    return 0
-                parsed = dict(reading=float(row[kw]), DefaultResult='reading')
+                brains = [b for k, b in analyses.items() if k.startswith(kw)]
+                if not brains:
+                    self.log('No analysis with keyword ${kw}',
+                             mapping=dict(kw=kw),
+                             numline=row_nr, line=str(row))
+                    continue
+                parsed = dict(reading=float(row[Key]), DefaultResult='reading')
                 self._addRawResult(sample_id, {kw: parsed})
             except (TypeError, ValueError):
-                msg = "Can't coerce value for keyword {} to a number".format(kw)
-                self.warn(msg, numline=row_nr, line=str(row))
+                self.warn('Value for keyword ${kw} is not numeric',
+                          mapping=dict(kw=kw),
+                          numline=row_nr, line=str(row))
 
         return 0
 
     @staticmethod
     def get_ar(sample_id):
-        query = dict(portal_type="AnalysisRequest", getId=sample_id)
+        query = dict(portal_type='AnalysisRequest', getId=sample_id)
         brains = api.search(query, CATALOG_ANALYSIS_REQUEST_LISTING)
         try:
             return api.get_object(brains[0])
@@ -149,21 +155,11 @@ class Nexion350x(InstrumentResultsFileParser):
         analyses = ar.getAnalyses()
         return dict((a.getKeyword, a) for a in analyses)
 
-    def get_analysis(self, ar, kw):
-        analyses = self.get_analyses(ar)
-        analyses = [v for k, v in analyses.items() if k.startswith(kw)]
-        if len(analyses) < 1:
-            msg = "No analysis found matching Keyword '${kw}'",
-            raise AnalysisNotFound(msg, kw=kw)
-        if len(analyses) > 1:
-            msg = "Multiple analyses found matching Keyword '${kw}'",
-            raise MultipleAnalysesFound(msg, kw=kw)
-        return analyses[0]
-
 
 class importer(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
-    title = "Perkin Elmer Nexion 350X"
+    title = 'Perkin Elmer Nexion 350X'
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context
@@ -177,13 +173,14 @@ class importer(object):
 
         infile = request.form['instrument_results_file']
         if not hasattr(infile, 'filename'):
-            errors.append(_("No file selected"))
+            errors.append(_('No file selected'))
 
         artoapply = request.form['artoapply']
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
+        worksheet = request.form['worksheet']
 
-        parser = Nexion350x(infile)
+        parser = Nexion350xParser(infile, worksheet=worksheet)
         if parser:
 
             status = ['sample_received', 'attachment_due', 'to_be_verified']

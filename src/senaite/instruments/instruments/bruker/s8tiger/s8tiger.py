@@ -21,6 +21,7 @@ import csv
 import json
 import traceback
 from mimetypes import guess_type
+from os.path import abspath
 from os.path import basename
 from os.path import splitext
 from re import subn
@@ -71,14 +72,14 @@ class S8TigerParser(InstrumentResultsFileParser):
     ar = None
 
     def __init__(self, infile, worksheet=None, encoding=None,
-                 final_result_unit=None, delimiter=None):
+                 default_unit=None, delimiter=None):
         self.delimiter = delimiter if delimiter else ','
-        self.unit = final_result_unit if final_result_unit else "pct"
+        self.unit = default_unit if default_unit else "pct"
+        self.encoding = encoding
         self.ar = None
         self.analyses = None
         self.worksheet = worksheet if worksheet else 0
         self.infile = infile
-        self.csv_data = None
         self.csv_data = None
         self.sample_id = None
         mimetype = guess_type(self.infile.filename)
@@ -86,11 +87,12 @@ class S8TigerParser(InstrumentResultsFileParser):
 
     def parse(self):
         order = []
-        if '.xlsx' in self.infile.filename.lower():
+        ext = splitext(self.infile.filename.lower())[-1]
+        if ext == '.xlsx':
             order = (xlsx_to_csv, xls_to_csv)
-        elif '.xls' in self.infile.filename.lower():
+        elif ext == '.xls':
             order = (xls_to_csv, xlsx_to_csv)
-        elif '.csv' in self.infile.filename.lower():
+        elif ext == '.csv':
             self.csv_data = self.infile
         if order:
             for importer in order:
@@ -130,21 +132,24 @@ class S8TigerParser(InstrumentResultsFileParser):
         lines = self.csv_data.readlines()
         reader = csv.DictReader(lines)
         for row in reader:
-            self.parse_row(reader.line_num, row)
+            self.parse_row(ar, reader.line_num, row)
+        return 0
 
-    def parse_row(self, row_nr, row):
+    def parse_row(self, ar, row_nr, row):
         # convert row to use interim field names
         parsed = {field_interim_map[k]: v for k, v in row.items()}
-        default_result = 'reading'
-        parsed.update({'DefaultResult': default_result})
 
         formula = parsed.get('formula')
+        kw = subn(r'[^\w\d\-_]*', '', formula)[0]
+        kw = kw.lower()
         try:
-            analysis = self.get_analysis(formula)
+            analysis = self.get_analysis(ar, kw)
+            if not analysis:
+                return 0
             keyword = analysis.getKeyword
         except Exception as e:
-            self.warn(msg="Error getting analysis for '${f}': ${e}",
-                      mapping={'f': formula, 'e': repr(e)},
+            self.warn(msg="Error getting analysis for '${kw}': ${e}",
+                      mapping={'kw': kw, 'e': repr(e)},
                       numline=row_nr, line=str(row))
             return
 
@@ -155,22 +160,27 @@ class S8TigerParser(InstrumentResultsFileParser):
         except (TypeError, ValueError, IndexError):
             self.warn(msg="Can't extract numerical value from `concentration`",
                       numline=row_nr, line=str(row))
-            parsed['pct'] = ''
-            parsed['ppm'] = ''
-            parsed['reading'] = ''
+            parsed['reading_pct'] = ''
+            parsed['reading_ppm'] = ''
+            return 0
         else:
-            if 'ppm' in concentration.lower():
-                parsed['pct'] = val * 0.0001
-                parsed['ppm'] = val
+            if 'reading_ppm' in concentration.lower():
+                parsed['reading_pct'] = val * 0.0001
+                parsed['reading_ppm'] = val
             elif '%' in concentration:
-                parsed['pct'] = val
-                parsed['ppm'] = 1 / 0.0001 * val
+                parsed['reading_pct'] = val
+                parsed['reading_ppm'] = 1 / 0.0001 * val
             else:
-                self.warn("Can't decide if concentration units are PPM or %",
+                self.warn("Can't decide if reading units are PPM or %",
                           numline=row_nr, line=str(row))
                 return 0
-            reading = parsed['ppm'] if self.unit == 'ppm' else parsed['pct']
-            parsed['reading'] = reading
+
+        if self.unit == 'reading_ppm':
+            reading = parsed['reading_ppm']
+        else:
+            reading = parsed['reading_pct']
+        parsed['reading'] = reading
+        parsed.update({'DefaultResult': 'reading'})
 
         self._addRawResult(self.sample_id, {keyword: parsed})
         return 0
@@ -189,20 +199,24 @@ class S8TigerParser(InstrumentResultsFileParser):
         analyses = ar.getAnalyses()
         return dict((a.getKeyword, a) for a in analyses)
 
-    def get_analysis(self, f):
-        analyses = [v for k, v in self.analyses.items() if k.startswith(f)]
+    def get_analysis(self, ar, kw):
+        analyses = self.get_analyses(ar)
+        analyses = [v for k, v in analyses.items() if k.startswith(kw)]
         if len(analyses) < 1:
-            msg = "No analysis found matching Keyword '${kw}'",
-            raise AnalysisNotFound(msg, kw=f)
+            self.log('No analysis found matching keyword "${kw}"',
+                     mapping=dict(kw=kw))
+            return None
         if len(analyses) > 1:
-            msg = "Multiple analyses found matching Keyword '${kw}'",
-            raise MultipleAnalysesFound(msg, kw=f)
+            self.warn('Multiple analyses found matching Keyword "${kw}"',
+                      mapping=dict(kw=kw))
+            return None
         return analyses[0]
 
 
 class importer(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "Bruker S8 Tiger"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context
@@ -221,9 +235,11 @@ class importer(object):
         artoapply = request.form['artoapply']
         override = request.form['results_override']
         instrument = request.form.get('instrument', None)
-
-        final_result_unit = request.form['final_result_unit']
-        parser = S8TigerParser(infile, final_result_unit=final_result_unit)
+        default_unit = request.form['default_unit']
+        worksheet = request.form.get('worksheet', 0)
+        parser = S8TigerParser(infile,
+                               worksheet=worksheet,
+                               default_unit=default_unit)
         if parser:
 
             status = ['sample_received', 'attachment_due', 'to_be_verified']

@@ -1,5 +1,6 @@
 Formula,Concentration,Z,Status,Line 1,Net int.,LLD,Stat. error,Analyzed layer,Bound %
-Fe2O3,67.8 % +,26,XRF 1,Fe KA1-HR-Tr,1930,100.3 PPM,0.13%,67 um,
+Ag 107,111.8 % +,26,XRF 1,Fe KA1-HR-Tr,1930,100.3 PPM,0.13%,67 um,
+Al 27,222.8 % +,26,XRF 1,Fe KA1-HR-Tr,1930,100.3 PPM,0.13%,67 um,
 SiO2,28.8 % -,14,XRF 1,Si KA1-HR-Tr,60.63,211.9 PPM,0.73%,2.52 um,
 Al2O3,2.46 % +,13,XRF 1,Al KA1-HR-Tr,4.634,236.1 PPM,2.66%,1.71 um,
 SO3,0.294 % -,16,XRF 1,S  KA1-HR-Tr,1.25,100.5 PPM,5.25%,4.0 um,

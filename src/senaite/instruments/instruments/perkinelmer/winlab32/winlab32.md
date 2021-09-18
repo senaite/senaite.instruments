@@ -5,13 +5,13 @@ instruments and configurations than those tested.
 
 The file can be XLS, XLSX, or CSV.
 
-Three colum values are used, which must have the headers below.  Other columns are ignored
+Three column values are used, which must have the headers below.  Other columns are ignored
 
     - Sample ID
     - Analyte Name
     - Reported Conc (Calib)
 
-The interim fields on the calculation will be completed as follows:
+The interim fields on the analysis service (or calculation) will be completed as follows:
 
     - `reading`: Contains the value from the Analyte Name column for this sample
 

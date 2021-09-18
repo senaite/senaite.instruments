@@ -2,7 +2,8 @@ import types
 
 import openpyxl
 from openpyxl import load_workbook
-from senaite.core.exportimport.instruments.resultsimport import InstrumentResultsFileParser
+from senaite.core.exportimport.instruments.resultsimport import \
+    InstrumentResultsFileParser
 from cStringIO import StringIO
 from xlrd import open_workbook
 from zope.publisher.browser import FileUpload
@@ -15,6 +16,7 @@ def xls_to_csv(infile, worksheet=0, delimiter=","):
     convenience of the CSV library
 
     """
+
     def find_sheet(wb, worksheet):
         for sheet in wb.sheets():
             if sheet.name == worksheet:
@@ -35,34 +37,33 @@ def xls_to_csv(infile, worksheet=0, delimiter=","):
             if value is None:
                 value = ""
             line.append(str(value))
-        print >>buffer, delimiter.join(line)
+        print >> buffer, delimiter.join(line)
     buffer.seek(0)
     return buffer
 
-def xlsx_to_csv(infile, worksheet=0, delimiter=","):
-    # TODO: Move to utility module
-    """
-    Convert xlsx to easier format first, since we want to use the
-    convenience of the CSV library
 
-    """
+def xlsx_to_csv(infile, worksheet=None, delimiter=","):
+    worksheet = worksheet if worksheet else 0
     wb = load_workbook(filename=infile)
-    sheet = wb.worksheets[worksheet]
-    buffer = StringIO()
+    if worksheet in wb.sheetnames:
+        sheet = wb[worksheet]
+    else:
+        try:
+            index = int(worksheet)
+            sheet = wb.worksheets[index]
+        except (ValueError, TypeError):
+            return
 
-    # extract all rows
-    rows = list(sheet.rows)
-    for row in rows:
+    buffer = StringIO()
+    for row in sheet.rows:
         line = []
         for cell in row:
-            value = cell.value
-            try:
-                value = value.encode("utf8")
-            except:
-                pass
-            if value is None:
-                value = ""
-            line.append(str(value).split("\n")[0].strip())
+            value = "" if cell.value is None else str(cell.value).encode("utf8")
+            if "\n" in value:  # fixme multi-line cell gives only first line
+                value = value.split("\n")[0]
+            line.append(value.strip())
+        if not any(line):
+            continue
         buffer.write(delimiter.join(line) + "\n")
     buffer.seek(0)
     return buffer
@@ -79,6 +80,7 @@ class FileStub:
 class InstrumentXLSResultsFileParser(InstrumentResultsFileParser):
     """ Parser
     """
+
     def __init__(self, infile, worksheet, encoding='xlsx', delimiter=None):
         InstrumentResultsFileParser.__init__(self, infile, encoding.upper())
         # Convert xls to csv

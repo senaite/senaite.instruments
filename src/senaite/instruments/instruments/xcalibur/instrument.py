@@ -3,6 +3,8 @@ import json
 import re
 import traceback
 from cStringIO import StringIO
+from os.path import abspath
+
 from DateTime import DateTime
 from bika.lims import api
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
@@ -24,6 +26,7 @@ from zope.interface import implements
 class xcaliburexport(object):
     implements(IInstrumentExportInterface)
     title = "XCalibur Exporter"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context
@@ -97,6 +100,7 @@ class xcaliburexport(object):
 class xcaliburimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "XCalibur"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context

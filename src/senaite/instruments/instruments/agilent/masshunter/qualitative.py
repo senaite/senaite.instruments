@@ -1,6 +1,8 @@
 import json
 import traceback
 import xml.etree.cElementTree as ET
+from os.path import abspath
+
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
@@ -186,6 +188,7 @@ class qualitativeimport(object):
 class qualitativeexport(object):
     implements(IInstrumentExportInterface)
     title = "Agilent Masshunter Qualitative Exporter"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context
