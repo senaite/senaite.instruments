@@ -175,7 +175,7 @@ class S8TigerParser(InstrumentResultsFileParser):
                           numline=row_nr, line=str(row))
                 return 0
 
-        if self.unit == 'reading_ppm':
+        if self.unit == 'ppm':
             reading = parsed['reading_ppm']
         else:
             reading = parsed['reading_pct']
