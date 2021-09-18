@@ -34,7 +34,7 @@
     </div>
 
     <div class="form-group">
-        <label for="default_unit">Samples state</label>
+        <label for="default_unit">Default result unit</label>
         <select name="default_unit" class="form-control" id="default_unit">
             <option value="pct">Percentage</option>
             <option value="ppm">PPM</option>
@@ -75,17 +75,3 @@
     </div>
 
 </fieldset>
-
-
-<td><label for="default_unit">Final result unit</label>&nbsp;</td>
-<td>
-    <select name="default_unit" id="default_unit">
-        <option value="pct">Percentage</option>
-        <option value="ppm">PPM</option>
-    </select>
-</td>
-</tr>
-</table>
-<p></p>
-<input name="firstsubmit" type="submit" value="Submit" i18n:attributes="value"/>
-<p></p>
