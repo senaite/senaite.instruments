@@ -41,6 +41,10 @@ def xls_to_csv(infile, worksheet=0, delimiter=","):
     buffer.seek(0)
     return buffer
 
+class SheetNotFound(Exception):
+    """
+    Sheet not found in workbook
+    """
 
 def xlsx_to_csv(infile, worksheet=None, delimiter=","):
     worksheet = worksheet if worksheet else 0
@@ -51,8 +55,8 @@ def xlsx_to_csv(infile, worksheet=None, delimiter=","):
         try:
             index = int(worksheet)
             sheet = wb.worksheets[index]
-        except (ValueError, TypeError):
-            return
+        except (ValueError, TypeError, IndexError):
+            raise SheetNotFound
 
     buffer = StringIO()
     for row in sheet.rows:

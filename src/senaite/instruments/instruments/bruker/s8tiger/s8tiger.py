@@ -37,6 +37,7 @@ from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from senaite.instruments.instrument import FileStub
+from senaite.instruments.instrument import SheetNotFound
 from senaite.instruments.instrument import xls_to_csv
 from senaite.instruments.instrument import xlsx_to_csv
 from zope.interface import implements
@@ -102,6 +103,9 @@ class S8TigerParser(InstrumentResultsFileParser):
                         worksheet=self.worksheet,
                         delimiter=self.delimiter)
                     break
+                except SheetNotFound:
+                    self.err("Sheet not found in workbook: %s" % self.worksheet)
+                    return -1
                 except Exception as e:  # noqa
                     pass
             else:

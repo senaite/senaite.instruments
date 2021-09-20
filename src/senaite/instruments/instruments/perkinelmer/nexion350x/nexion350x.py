@@ -36,6 +36,7 @@ from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from senaite.instruments.instrument import FileStub
+from senaite.instruments.instrument import SheetNotFound
 from senaite.instruments.instrument import xls_to_csv
 from senaite.instruments.instrument import xlsx_to_csv
 from zope.interface import implements
@@ -89,10 +90,13 @@ class Nexion350xParser(InstrumentResultsFileParser):
                         worksheet=self.worksheet,
                         delimiter=self.delimiter)
                     break
+                except SheetNotFound:
+                    self.err("Sheet not found in workbook: %s" % self.worksheet)
+                    return -1
                 except Exception as e:  # noqa
                     pass
             else:
-                self.warn('Error parsing input as XLS, XLSX, or CSV.')
+                self.warn("Can't parse input file as XLS, XLSX, or CSV.")
                 return -1
         stub = FileStub(file=self.csv_data, name=str(self.infile.filename))
         self.csv_data = FileUpload(stub)

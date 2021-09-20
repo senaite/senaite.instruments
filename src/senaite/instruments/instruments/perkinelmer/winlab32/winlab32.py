@@ -36,6 +36,7 @@ from bika.lims import api
 from bika.lims import bikaMessageFactory as _
 from bika.lims.catalog import CATALOG_ANALYSIS_REQUEST_LISTING
 from senaite.instruments.instrument import FileStub
+from senaite.instruments.instrument import SheetNotFound
 from senaite.instruments.instrument import xls_to_csv
 from senaite.instruments.instrument import xlsx_to_csv
 from zope.interface import implements
@@ -53,10 +54,12 @@ class AnalysisNotFound(Exception):
 class Winlab32(InstrumentResultsFileParser):
     ar = None
 
-    def __init__(self, infile, encoding=None, delimiter=None):
+    def __init__(self, infile, worksheet=None, encoding=None, delimiter=None):
         self.delimiter = delimiter if delimiter else ','
+        self.encoding = encoding
         self.infile = infile
         self.csv_data = None
+        self.worksheet = worksheet if worksheet else 0
         self.sample_id = None
         mimetype = guess_type(self.infile.filename)
         InstrumentResultsFileParser.__init__(self, infile, mimetype)
@@ -75,8 +78,12 @@ class Winlab32(InstrumentResultsFileParser):
                 try:
                     self.csv_data = importer(
                         infile=self.infile,
+                        worksheet=self.worksheet,
                         delimiter=self.delimiter)
                     break
+                except SheetNotFound:
+                    self.err("Sheet not found in workbook: %s" % self.worksheet)
+                    return -1
                 except Exception as e:  # noqa
                     pass
             else:
@@ -107,7 +114,7 @@ class Winlab32(InstrumentResultsFileParser):
 
         try:
             ar = self.get_ar(sample_id)
-            analysis = self.get_analysis(ar, kw)
+            self.get_analysis(ar, kw)
         except Exception as e:
             self.warn(msg="Error getting analysis for '${s}/${kw}': ${e}",
                       mapping={'s': sample_id, 'kw': kw, 'e': repr(e)},
@@ -165,9 +172,10 @@ class importer(object):
 
         artoapply = request.form['artoapply']
         override = request.form['results_override']
+        worksheet = request.form.get('worksheet', 0)
         instrument = request.form.get('instrument', None)
 
-        parser = Winlab32(infile)
+        parser = Winlab32(infile, worksheet=worksheet)
         if parser:
 
             status = ['sample_received', 'attachment_due', 'to_be_verified']
