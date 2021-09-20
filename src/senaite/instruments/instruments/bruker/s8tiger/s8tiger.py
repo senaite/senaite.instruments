@@ -141,7 +141,10 @@ class S8TigerParser(InstrumentResultsFileParser):
 
     def parse_row(self, ar, row_nr, row):
         # convert row to use interim field names
-        parsed = {field_interim_map[k]: v for k, v in row.items()}
+        if 'reading' not in field_interim_map.values():
+            self.err("Missing 'reading' interim field.")
+            return -1
+        parsed = {field_interim_map.get(k, ''): v for k, v in row.items()}
 
         formula = parsed.get('formula')
         kw = subn(r'[^\w\d\-_]*', '', formula)[0]
