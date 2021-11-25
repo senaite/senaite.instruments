@@ -1,0 +1,5 @@
+Sample ID,Analyte Name,Date,Time,Reported Conc (Calib),Units (Samp)
+ DU-0001,Ag 107,28-05-21,12:40:54 PM,0.111,mg/kg
+ DU-0001,Al 27,28-05-21,12:40:54 PM,0.222,mg/kg
+ DU-0002,Ag 107,28-05-21,12:40:54 PM,0.555,mg/kg
+ DU-0002,Al 27,28-05-21,12:40:54 PM,0.666,mg/kg

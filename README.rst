@@ -10,81 +10,29 @@
 .. image:: https://img.shields.io/badge/README-GitHub-blue.svg?style=flat-square
    :target: https://github.com/senaite/senaite.instruments#readme
 
-
 Introduction
 ============
 
-WARNING: This addon is not yet production ready and has not been released on PYPI
-
-
-SENAITE INSTRUMENTS adds **instrument results import and export** capabilities to `SENAITE LIMS <https://www.senaite.com>`_.
-
+SENAITE INSTRUMENTS adds **instrument results import and export**
+capabilities to `SENAITE LIMS <https://www.senaite.com>`_.
 
 Installation
 ============
 
-Please follow the installations instructions for `Plone 4`_ and
-`senaite.lims`_.
-
-To install SENAITE INSTRUMENTS, you have to add `senaite.instruments` into the `eggs`
-list inside the `[buildout]` section of your `buildout.cfg`::
+To install SENAITE INSTRUMENTS, you have to add `senaite.instruments` to the `eggs` list inside the `[buildout]`
+section of your `buildout.cfg`::
 
    [buildout]
-   parts =
-       instance
-   extends =
-       http://dist.plone.org/release/4.3.18/versions.cfg
-   find-links =
-       http://dist.plone.org/release/4.3.18
-       http://dist.plone.org/thirdparty
+   ...
    eggs =
-       Plone
-       Pillow
-       senaite.lims
+       ...
        senaite.instruments
-   zcml =
-   eggs-directory = ${buildout:directory}/eggs
-
-   [instance]
-   recipe = plone.recipe.zope2instance
-   user = admin:admin
-   http-address = 0.0.0.0:8080
-   eggs =
-       ${buildout:eggs}
-   zcml =
-       ${buildout:zcml}
-
-   [versions]
-   setuptools =
-   zc.buildout =
-
-
-**Note**
-
-The above example works for the buildout created by the unified
-installer. If you however have a custom buildout you might need to add
-the egg to the `eggs` list in the `[instance]` section rather than
-adding it in the `[buildout]` section.
-
-Also see this section of the Plone documentation for further details:
-https://docs.plone.org/4/en/manage/installing/installing_addons.html
 
 **Important**
 
-For the changes to take effect you need to re-run buildout from your
-console::
+For the changes to take effect you need to re-run buildout from your console::
 
    bin/buildout
-
-
-Installation Requirements
--------------------------
-
-The following versions are required for SENAITE INSTRUMENTS:
-
--  Plone 4.3.18
--  senaite.lims >= 1.3.0
-
 
 Activate the Add-on
 -------------------
@@ -93,6 +41,58 @@ Please browse to the *Add-ons* Controlpanel and activate the **SENAITE INSTRUMEN
 
 .. image:: static/activate_addon.png
     :alt: Activate SENAITE INSTRUMENTS Add-on
+
+Requirements
+------------
+
+The following versions are required for SENAITE INSTRUMENTS:
+
+-  `PLONE 5 <https://docs.plone.org/manage/installing/installation.html>`_
+-  `SENAITE LIMS >= 2.0.0 <https://github.com/senaite/senaite.lims>`_
+
+Please follow their respective installation instructions.
+
+Development
+===========
+
+Environment
+-----------
+
+First install `buildout.coredev <https://github.com/senaite/buildout.coredev>`_.
+
+Then clone `senaite.instruments` repository::
+
+  cd buildout.coredev/src
+  git clone https://github.com/senaite/senaite.instruments
+
+Finally, edit `buildout.cfg`, like this::
+
+  [buildout]
+  ...
+  parts =
+      ...
+      test
+
+  eggs =
+      ...
+      senaite.instruments
+
+  [sources]
+  ...
+  senaite.instruments = git https://github.com/senaite/senaite.instruments.git
+
+  [test]
+  recipe = zc.recipe.testrunner
+  eggs =
+      senaite.instruments [test]
+  defaults = ['--auto-color', '--auto-progress']
+
+Running tests
+-------------
+
+When above [test] part is configured you can run all tests like this::
+
+    bin/test -s senaite.instruments
 
 Contribute
 ==========

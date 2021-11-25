@@ -43,6 +43,8 @@ setup(
         "senaite.api",
         "senaite.core",
         "xlrd",
+        # openpyxl >= 3.0.0 does not support Python 2.x anymore
+        "openpyxl==2.6.4",
     ],
     extras_require={
         "test": [
