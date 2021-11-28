@@ -65,7 +65,7 @@
     for="*"
     name="pe_delta_lactoscope_importer"
     factory=".pedeltalactoscope.pedeltalactoscope.pedeltalactoscopeimport"
-    provides="bika.lims.exportimport.instruments.IInstrumentImportInterface"/>
+    provides="senaite.core.exportimport.instruments.IInstrumentImportInterface"/>
 
    <adapter
     for="*"

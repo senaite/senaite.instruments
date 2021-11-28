@@ -3,14 +3,17 @@ import json
 import traceback
 from bika.lims import api
 from bika.lims import bikaMessageFactory as _
-from bika.lims.exportimport.instruments import IInstrumentAutoImportInterface
-from bika.lims.exportimport.instruments import IInstrumentImportInterface
-from bika.lims.exportimport.instruments.instrument import format_keyword
-from bika.lims.exportimport.instruments.resultsimport import AnalysisResultsImporter
 from bika.lims.utils import t
 from senaite.instruments.instrument import InstrumentXLSResultsFileParser
 from zope.interface import implements
 
+from senaite.core.exportimport.instruments.instrument import format_keyword
+from senaite.core.exportimport.instruments import IInstrumentAutoImportInterface
+from senaite.core.exportimport.instruments import IInstrumentImportInterface
+from senaite.core.exportimport.instruments.resultsimport import \
+    AnalysisResultsImporter
+
+from os.path import abspath
 
 class PEDeltaLactorScopeParser(InstrumentXLSResultsFileParser):
     """ Parser
@@ -93,6 +96,7 @@ class PEDeltaLactorScopeParser(InstrumentXLSResultsFileParser):
 class pedeltalactoscopeimport(object):
     implements(IInstrumentImportInterface, IInstrumentAutoImportInterface)
     title = "PE Delta LactoScope"
+    __file__ = abspath(__file__)  # noqa
 
     def __init__(self, context):
         self.context = context
