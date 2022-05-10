@@ -70,7 +70,7 @@ class Nexion350xParser(InstrumentResultsFileParser):
         self.worksheet = worksheet
         self.csv_data = None
         self.sample_id = None
-        mimetype = guess_type(self.infile.filename)
+        mimetype, encoding = guess_type(self.infile.filename)
         InstrumentResultsFileParser.__init__(self, infile, mimetype)
 
     def parse(self):
@@ -119,25 +119,20 @@ class Nexion350xParser(InstrumentResultsFileParser):
             msg = 'Sample not found for {}'.format(sample_id)
             self.warn(msg, numline=row_nr, line=str(row))
             return 0
-        # Get sample analyses
-        analyses = self.get_analyses(ar)
         # Search for rows who's headers are analyte keys
-        for Key in row.keys():
-            key = Key.lower()
+        for key in row.keys():
             if key in non_analyte_row_headers:
                 continue
             kw = subn(r'[^\w\d]*', '', key)[0]
             if not kw:
                 continue
             try:
-                brains = [b for k, b in analyses.items() if k.startswith(kw)]
-                if not brains:
-                    self.log('No analysis with keyword ${kw}',
-                             mapping=dict(kw=kw),
-                             numline=row_nr, line=str(row))
+                brain = self.get_analysis(ar, kw, row_nr=row_nr, row=row)
+                if not brain:
                     continue
-                parsed = dict(reading=float(row[Key]), DefaultResult='reading')
-                self._addRawResult(sample_id, {kw: parsed})
+                new_kw = brain.getKeyword
+                parsed = dict(reading=float(row[key]), DefaultResult='reading')
+                self._addRawResult(sample_id, {new_kw: parsed})
             except (TypeError, ValueError):
                 self.warn('Value for keyword ${kw} is not numeric',
                           mapping=dict(kw=kw),
@@ -158,6 +153,17 @@ class Nexion350xParser(InstrumentResultsFileParser):
     def get_analyses(ar):
         analyses = ar.getAnalyses()
         return dict((a.getKeyword, a) for a in analyses)
+
+    def get_analysis(self, ar, kw, row_nr="", row=""):
+        kw = kw
+        items = self.get_analyses(ar)
+        brains = [v for k, v in items.items() if k.startswith(kw)]
+        if len(brains) < 1:
+            return None
+        if len(brains) > 1:
+            msg = "Multiple brains found matching Keyword '${kw}'",
+            raise MultipleAnalysesFound(msg, kw=kw)
+        return brains[0]
 
 
 class importer(object):
