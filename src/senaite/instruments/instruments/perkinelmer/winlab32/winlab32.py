@@ -61,7 +61,7 @@ class Winlab32(InstrumentResultsFileParser):
         self.csv_data = None
         self.worksheet = worksheet if worksheet else 0
         self.sample_id = None
-        mimetype = guess_type(self.infile.filename)
+        mimetype, encoding = guess_type(self.infile.filename)
         InstrumentResultsFileParser.__init__(self, infile, mimetype)
 
     def parse(self):
@@ -108,20 +108,21 @@ class Winlab32(InstrumentResultsFileParser):
 
         sample_id = subn(r'[^\w\d\-_]*', '', row.get('Sample ID', ""))[0]
         kw = subn(r"[^\w\d]*", "", row.get('Analyte Name', ""))[0]
-        kw = kw.lower()
+        kw = kw
         if not sample_id or not kw:
             return 0
 
         try:
             ar = self.get_ar(sample_id)
-            self.get_analysis(ar, kw)
+            brain = self.get_analysis(ar, kw)
+            new_kw = brain.getKeyword
         except Exception as e:
             self.warn(msg="Error getting analysis for '${s}/${kw}': ${e}",
                       mapping={'s': sample_id, 'kw': kw, 'e': repr(e)},
                       numline=row_nr, line=str(row))
             return
 
-        self._addRawResult(sample_id, {kw: parsed})
+        self._addRawResult(sample_id, {new_kw: parsed})
         return 0
 
     @staticmethod
@@ -139,7 +140,7 @@ class Winlab32(InstrumentResultsFileParser):
         return dict((a.getKeyword, a) for a in brains)
 
     def get_analysis(self, ar, kw):
-        kw = kw.lower()
+        kw = kw
         brains = self.get_analyses(ar)
         brains = [v for k, v in brains.items() if k.startswith(kw)]
         if len(brains) < 1:
