@@ -67,14 +67,14 @@ class TestWinlab32(BaseTestCase):
         self.services = [
             self.add_analysisservice(
                 title='Ag 107',
-                Keyword='ag107',
+                Keyword='Ag107',
                 PointOfCapture='lab',
                 Category=self.add_analysiscategory(title='Metals'),
                 Calculation='Dilution',
                 InterimFields=service_interims),
             self.add_analysisservice(
                 title='al 27',
-                Keyword='al27',
+                Keyword='Al27',
                 PointOfCapture='lab',
                 Category=self.add_analysiscategory(title='Metals'),
                 Calculation='Dilution',
@@ -102,8 +102,8 @@ class TestWinlab32(BaseTestCase):
             instrument_results_file=import_file,
             instrument=api.get_uid(self.instrument)))
         results = importer.Import(self.portal, request)
-        ag = ar.getAnalyses(full_objects=True, getKeyword='ag107')[0]
-        al = ar.getAnalyses(full_objects=True, getKeyword='al27')[0]
+        ag = ar.getAnalyses(full_objects=True, getKeyword='Ag107')[0]
+        al = ar.getAnalyses(full_objects=True, getKeyword='Al27')[0]
         test_results = eval(results)  # noqa
         self.assertEqual(ag.getResult(), '0.111')
         self.assertEqual(al.getResult(), '0.222')
