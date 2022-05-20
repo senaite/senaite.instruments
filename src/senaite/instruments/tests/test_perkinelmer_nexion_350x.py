@@ -66,13 +66,13 @@ class TestNexion350X(BaseTestCase):
 
         self.services = [
             self.add_analysisservice(title='Ag 107',
-                                     Keyword='ag107',
+                                     Keyword='Ag107',
                                      PointOfCapture='lab',
                                      Category='Metals',
                                      Calculation='Dilution',
                                      InterimFields=service_interims),
             self.add_analysisservice(title='al 27',
-                                     Keyword='al27',
+                                     Keyword='Al27',
                                      PointOfCapture='lab',
                                      Category='Metals',
                                      Calculation='Dilution',
@@ -111,10 +111,10 @@ class TestNexion350X(BaseTestCase):
             instrument=api.get_uid(self.instrument)))
         results = importer.Import(self.portal, request)
         test_results = eval(results)  # noqa
-        ag1 = ar1.getAnalyses(full_objects=True, getKeyword='ag107')[0]
-        al1 = ar1.getAnalyses(full_objects=True, getKeyword='al27')[0]
-        ag2 = ar2.getAnalyses(full_objects=True, getKeyword='ag107')[0]
-        al2 = ar2.getAnalyses(full_objects=True, getKeyword='al27')[0]
+        ag1 = ar1.getAnalyses(full_objects=True, getKeyword='Ag107')[0]
+        al1 = ar1.getAnalyses(full_objects=True, getKeyword='Al27')[0]
+        ag2 = ar2.getAnalyses(full_objects=True, getKeyword='Ag107')[0]
+        al2 = ar2.getAnalyses(full_objects=True, getKeyword='Al27')[0]
         self.assertEqual(ag1.getResult(), '0.111')
         self.assertEqual(al1.getResult(), '0.555')
         self.assertEqual(ag2.getResult(), '0.222')
